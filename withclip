@@ -1,0 +1,16 @@
+# ~/.local/bin/withclip
+#!/usr/bin/env bash
+set -euo pipefail
+
+tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+
+# 1) On lit TOUT stdin
+# 2) On nettoie les séquences ANSI (couleurs, etc.)
+# 3) On affiche tel quel ET on écrit dans un fichier tampon
+sed -r 's/\x1B\[[0-9;?]*[ -/]*[@-~]//g' | tee "$tmp"
+
+# 4) À la fin seulement, on copie dans le presse-papiers (si disponible)
+if command -v termux-clipboard-set >/dev/null 2>&1; then
+  termux-clipboard-set < "$tmp" >/dev/null 2>&1 || true
+fi
+

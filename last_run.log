@@ -1,0 +1,288 @@
+--------- beginning of main
+11-27 09:16:38.370 14678 14678 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 10448 <<<<<<
+11-27 09:16:38.373 14678 14678 I app_process: MMAP_TRYLOCK is supported in uffd errno:2 addr:0x7211472000 size:4096
+11-27 09:16:38.374 14678 14678 I AndroidRuntime: Using default boot image
+11-27 09:16:38.374 14678 14678 I AndroidRuntime: Leaving lock profiling enabled
+11-27 09:16:38.374 14678 14678 W libc    : Access denied finding property "odsign.verification.success"
+11-27 09:16:38.376 14678 14678 W app_process: ART APEX data files are untrusted.
+11-27 09:16:38.376 14678 14678 I app_process: Using CollectorTypeCMC GC.
+11-27 09:16:38.376 14678 14678 E app_process: Error reading named image component header for /system/framework/boot.art, error: Failed to open oat file '/system/framework/arm64/boot.oat' when validating it for image '/system/framework/boot.art': In oat file '/system/framework/boot.oat': dex file checksum 0x67325180 does not match checksum 0xabfbc90c of external dex file '/apex/com.android.art/javalib/core-oj.jar'
+11-27 09:16:38.376 14678 14678 E app_process: Could not create image space with image file '/system/framework/boot.art!/apex/com.android.art/etc/boot-image.prof!/system/etc/boot-image.prof:/system/framework/boot-framework-adservices.art'. Attempting to fall back to imageless running. Error was: Failed to open oat file '/system/framework/arm64/boot.oat' when validating it for image '/system/framework/boot.art': In oat file '/system/framework/boot.oat': dex file checksum 0x67325180 does not match checksum 0xabfbc90c of external dex file '/apex/com.android.art/javalib/core-oj.jar'
+11-27 09:16:38.594 14678 14678 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-27 09:16:38.603 14678 14678 D nativeloader: Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+11-27 09:16:38.604 14678 14678 D app_process: u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/9/icu") succeeded. 
+11-27 09:16:38.604 14678 14678 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt76l.dat
+11-27 09:16:38.604 14678 14678 D nativeloader: Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+11-27 09:16:38.605 14678 14678 D nativeloader: Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+11-27 09:16:38.695 14678 14678 W libc    : Access denied finding property "ro.product.name_for_attestation"
+11-27 09:16:38.695 14678 14678 W libc    : Access denied finding property "ro.product.device_for_attestation"
+11-27 09:16:38.695 14678 14678 W libc    : Access denied finding property "ro.product.manufacturer_for_attestation"
+11-27 09:16:38.695 14678 14678 W libc    : Access denied finding property "ro.product.brand_for_attestation"
+11-27 09:16:38.695 14678 14678 W libc    : Access denied finding property "ro.product.model_for_attestation"
+11-27 09:16:38.713 14678 14678 E SemDvfsManager_JNI: SemDvfsManager: registerfunction enter
+11-27 09:16:38.713 14678 14678 E SemAffinityControl: SemAffinityControl: registerfunction enter
+11-27 09:16:38.745 14678 14678 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-27 09:16:38.745 14678 14678 D AndroidRuntime: Calling main entry com.termux.termuxam.Am
+11-27 09:16:38.755 14678 14678 I AconfigPackage: com.android.media.extractor.flags is mapped to com.android.media
+11-27 09:16:38.755 14678 14678 I AconfigPackage: com.android.media.mainline.flags is mapped to com.android.media
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.os.statsd.flags is mapped to com.android.os.statsd
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.settings.flags is mapped to system_ext
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.launcher3 is mapped to system_ext
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.server.policy.feature.flags is mapped to system_ext
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.bluetooth.flags is mapped to com.android.bt
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.uwb.flags is mapped to com.android.uwb
+11-27 09:16:38.756 14678 14678 I AconfigPackage: com.android.ranging.flags is mapped to com.android.uwb
+11-27 09:16:38.757 14678 14678 I AconfigPackage: com.android.appsearch.flags is mapped to com.android.appsearch
+11-27 09:16:38.757 14678 14678 I AconfigPackage: android.uprobestats.mainline.flags is mapped to com.android.uprobestats
+11-27 09:16:38.757 14678 14678 I AconfigPackage: com.android.rkpd.flags is mapped to com.android.rkpd
+11-27 09:16:38.757 14678 14678 I AconfigPackage: android.provider.flags is mapped to com.android.configinfrastructure
+11-27 09:16:38.757 14678 14678 I AconfigPackage: com.android.server.deviceconfig is mapped to com.android.configinfrastructure
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.nfc.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.admin.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.database.sqlite is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.power.feature.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.performance.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.contextualsearch.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.ondeviceintelligence.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.projection.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.companion is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.controls.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.text.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.providers.contactkeys.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.intentresolver is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.companion.virtualdevice.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.uprobestats.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.net.thread.platform.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.view.contentprotection.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.dreams is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.surfaceflinger.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.hardware.input is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.sdk is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.input.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.tracing is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.biometrics is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.view.contentcapture.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.job is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.content.res is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.net.platform.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.aconfig.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.server.app is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.speech.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.stats is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.hardware.biometrics is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.car.feature is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.adpf is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.location.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.settingslib.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.managedprovisioning.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.assist.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.net is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.settingslib.widget.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.camera.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.hardware.libsensor.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.jank is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.providers.settings is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.multiuser is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.power.optimization is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.calllogbackup is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.libvulkan.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.appfunctions.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.smartspace.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.shell.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.aaudio is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.hardware.radio is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: suspend_service.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.media.midi is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.libcore.readonly is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.settingslib.widget.selectorwithwidgetpreference.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.notification is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.systemui.shared is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.jank is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.wearable is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.audio is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.chooser is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.compat is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.alarm is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.apex.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.quickaccesswallet is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.usage is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.accessibility is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app.supervision.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.utils is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.chre.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.content.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.media.codec is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.os is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.nfc.nci.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.app is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.security.keystore2 is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.tradeinmode.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.hardware.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.telecom.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.settingslib.media.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.policy is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.media.audiopolicy is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.egg.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.compat.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.security is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.autofill is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.example.android.aconfig.demo.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.view.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.companion.virtual.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.aconfig_new_storage is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.feature.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.systemui is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.power.batterysaver is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.widget.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.editing.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.codec.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.powerstats is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.egl.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.media.audioserver is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.deviceidle is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.nfc is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.permission.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.voice.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.content.pm is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.power.hint is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.os is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.service.dreams is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.libgui.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.hardware.usb.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.provider is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.job is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.foldables.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.telephony.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.webkit is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.credentials.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.display.feature.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.notification is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.appwidget.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.frameworks.sensorservice.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.printspooler.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.window.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.adaptiveauth is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.net.wifi.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.media.tv.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.usb.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.os.vibrator is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.hardware.devicestate.feature.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.usage is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.server is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.wm.shell is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.view.inputmethod is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.graphics.hwui.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.server.backup is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: com.android.internal.pm.pkg.component.flags is mapped to system
+11-27 09:16:38.758 14678 14678 I AconfigPackage: android.view.accessibility is mapped to system
+11-27 09:16:38.759 14678 14678 I AconfigPackage: android.media.audio is mapped to system
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.server.am is mapped to system
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.media.playback.flags is mapped to system
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.wifi.flags is mapped to com.android.wifi
+11-27 09:16:38.759 14678 14678 I AconfigPackage: android.os.profiling is mapped to com.android.profiling
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.art.flags is mapped to com.android.art
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.libcore is mapped to com.android.art
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.org.conscrypt.flags is mapped to com.android.conscrypt
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.org.conscrypt.net.flags is mapped to com.android.conscrypt
+11-27 09:16:38.759 14678 14678 I AconfigPackage: android.graphics.pdf.flags is mapped to com.android.mediaprovider
+11-27 09:16:38.759 14678 14678 I AconfigPackage: com.android.providers.media.flags is mapped to com.android.mediaprovider
+11-27 09:16:38.759 14678 14678 I AconfigPackage: android.graphics.pdf.flags.readonly is mapped to com.android.mediaprovider
+11-27 09:16:38.760 14678 14678 I AconfigPackage: com.android.adservices.ondevicepersonalization.flags is mapped to com.android.ondevicepersonalization
+11-27 09:16:38.760 14678 14678 I AconfigPackage: com.android.healthfitness.flags is mapped to com.android.healthfitness
+11-27 09:16:38.760 14678 14678 I AconfigPackage: com.android.ipsec.flags is mapped to com.android.ipsec
+11-27 09:16:38.760 14678 14678 I AconfigPackage: com.android.devicelock.flags is mapped to com.android.devicelock
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.cellbroadcastreceiver.flags is mapped to com.android.cellbroadcast
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.permission.flags is mapped to com.android.permission
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.permissioncontroller.flags is mapped to com.android.permission
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.system.virtualmachine.flags is mapped to com.android.virt
+11-27 09:16:38.761 14678 14678 I AconfigPackage: android.media.swcodec.flags is mapped to com.android.media.swcodec
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.adservices.flags is mapped to com.android.adservices
+11-27 09:16:38.761 14678 14678 I AconfigPackage: com.android.sdksandbox.flags is mapped to com.android.adservices
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.net.ct.flags is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.tethering.mainline.beta is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.net.flags is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.nearby.flags is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: android.net.vcn is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.tethering.beta.test is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: android.net.http is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.net.thread.flags is mapped to com.android.tethering
+11-27 09:16:38.762 14678 14678 I AconfigPackage: com.android.icu is mapped to com.android.i18n
+11-27 09:16:38.762 14678 14678 E FeatureFlagsImplExport: android.os.flagging.AconfigStorageReadException: ERROR_PACKAGE_NOT_FOUND: package android.xr cannot be found on the device
+11-27 09:16:38.813 14678 14678 I app_process: System.exit called, status: 0
+11-27 09:16:38.813 14678 14678 I AndroidRuntime: VM exiting with result code 0.
+11-27 09:16:38.858 13658 13658 I ImeFocusController: onPreWindowFocus: skipped hasWindowFocus=false mHasImeFocus=true
+11-27 09:16:38.858 13658 13658 I ImeFocusController: onPostWindowFocus: skipped hasWindowFocus=false mHasImeFocus=true
+11-27 09:16:38.900 13658 13658 I ImeTracker: system_server:6c5fa1da: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+11-27 09:16:39.188 13658 13658 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@2e72b6e
+11-27 09:16:39.189 13658 13658 D InputTransport: Input channel destroyed: 'ClientS', fd=149
+11-27 09:16:39.365 13658 13658 I VRI[TermuxActivity]@bbdea9b: handleAppVisibility mAppVisible = true visible = false
+11-27 09:16:39.365 13658 13658 D VRI[TermuxActivity]@bbdea9b: visibilityChanged oldVisibility=true newVisibility=false
+11-27 09:16:39.375 13658 13679 D HWUI    : CacheManager::trimMemory(20)
+11-27 09:16:39.387 13658 13658 I VRI[TermuxActivity]@bbdea9b: Relayout returned: old=(0,0,1080,2340) new=(0,0,1080,2340) relayoutAsync=false req=(1080,2340)8 dur=4 res=0x2 s={false 0x0} ch=true seqId=0
+11-27 09:16:39.387 13658 13658 D VRI[TermuxActivity]@bbdea9b: Not drawing due to not visible. Reason=!mAppVisible && !mForceDecorViewVisibility
+11-27 09:16:39.387 13658 13658 I VRI[TermuxActivity]@bbdea9b: stopped(true) old = false
+11-27 09:16:39.387 13658 13658 D VRI[TermuxActivity]@bbdea9b: WindowStopped on com.termux/com.termux.app.TermuxActivity set to true
+11-27 09:16:39.387 13658 13679 D HWUI    : CacheManager::trimMemory(20)
+11-27 09:16:39.404 13658 13658 D BBA2    : setIsFg isFg = false; delayValue 3999ms
+11-27 09:16:39.404 14499 14499 D BBA2    : setIsFg isFg = false; delayValue 3999ms
+11-27 09:16:42.290 13658 13658 I VRI[TermuxActivity]@bbdea9b: handleAppVisibility mAppVisible = false visible = true
+11-27 09:16:42.295 13658 13658 I VRI[TermuxActivity]@bbdea9b: stopped(false) old = true
+11-27 09:16:42.295 13658 13658 D VRI[TermuxActivity]@bbdea9b: WindowStopped on com.termux/com.termux.app.TermuxActivity set to false
+11-27 09:16:42.296 13658 13658 D ViewRootImpl: Skipping stats log for color mode
+11-27 09:16:42.324 13658 13658 I InsetsController: onStateChanged: host=com.termux/com.termux.app.TermuxActivity, from=android.view.ViewRootImpl.onInsetsStateChanged:3026, state=InsetsState: {mDisplayFrame=Rect(0, 0 - 1080, 2340), mDisplayCutout=DisplayCutout{insets=Rect(0, 80 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(511, 0 - 569, 80), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2340 physicalDisplayWidth=1080 physicalDisplayHeight=2340 density={2.8125} cutoutSpec={M 0,0 M 0,7.822222222222222‬‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,20.62222222222222‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,-20.62222222222222‬ Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=113, center=Point(113, 113)}, RoundedCorner{position=TopRight, radius=113, center=Point(967, 113)}, RoundedCorner{position=BottomRight, radius=113, center=Point(967, 2227)}, RoundedCorner{position=BottomLeft, radius=113, center=Point(113, 2227)}]}  mRoundedCornerFrame=Rect(0, 0 - 1080, 2340), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(956, 0 - 1080, 80) rotation=0}, mDisplayShape=DisplayShape{ spec=-311912193 displayWidth=1080 displayHeight=2340 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}, mSources= { InsetsSource: {ebb70000 mType=statusBars mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70005 mType=mandatorySystemGestures mFrame=[0,0][1080,114] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70006 mType=tappableElement mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {3 mType=ime mFrame=[0,0][0,0] mVisible=false mFlags= mSideHint=NONE mBoundingRects=null}, InsetsSource: {27 mType=displayCutout mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {51210001 mType=navigationBars mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210004 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null}, InsetsSource: {51210005 mType=mandatorySystemGestures mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210006 mType=tappableElement mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210024 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null} }
+11-27 09:16:42.325 13658 13658 I BLASTBufferQueue_Java: new BLASTBufferQueue, mName= VRI[TermuxActivity]@bbdea9b mNativeObject= 0x71616b2660 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:3585 android.view.ViewRootImpl.relayoutWindow:11685 android.view.ViewRootImpl.performTraversals:4804 android.view.ViewRootImpl.doTraversal:3924 android.view.ViewRootImpl$TraversalRunnable.run:12903 android.view.Choreographer$CallbackRecord.run:1901 android.view.Choreographer$CallbackRecord.run:1910 android.view.Choreographer.doCallbacks:1367 android.view.Choreographer.doFrame:1292 android.view.Choreographer$FrameDisplayEventReceiver.run:1870 
+11-27 09:16:42.325 13658 13658 I BLASTBufferQueue_Java: update, w= 1080 h= 2340 mName = VRI[TermuxActivity]@bbdea9b mNativeObject= 0x71616b2660 sc.mNativeObject= 0x70f16553d0 format= -1 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:3590 android.view.ViewRootImpl.relayoutWindow:11685 android.view.ViewRootImpl.performTraversals:4804 android.view.ViewRootImpl.doTraversal:3924 android.view.ViewRootImpl$TraversalRunnable.run:12903 android.view.Choreographer$CallbackRecord.run:1901 
+11-27 09:16:42.325 13658 13658 I VRI[TermuxActivity]@bbdea9b: Relayout returned: old=(0,0,1080,2340) new=(0,0,1080,2340) relayoutAsync=false req=(1080,2340)0 dur=21 res=0x3 s={true 0x7011684e20} ch=true seqId=0
+11-27 09:16:42.326 13658 13658 D VRI[TermuxActivity]@bbdea9b: mThreadedRenderer.initialize() mSurface={isValid=true 0x7011684e20} hwInitialized=true
+11-27 09:16:42.327 13658 13658 D AbsListView:  in onLayout changed 
+11-27 09:16:42.328 13658 13658 D VRI[TermuxActivity]@bbdea9b: reportNextDraw android.view.ViewRootImpl.performTraversals:5443 android.view.ViewRootImpl.doTraversal:3924 android.view.ViewRootImpl$TraversalRunnable.run:12903 android.view.Choreographer$CallbackRecord.run:1901 android.view.Choreographer$CallbackRecord.run:1910 
+11-27 09:16:42.328 13658 13658 D VRI[TermuxActivity]@bbdea9b: Setup new sync=wmsSync-VRI[TermuxActivity]@bbdea9b#6
+11-27 09:16:42.328 13658 13658 I VRI[TermuxActivity]@bbdea9b: Creating new active sync group VRI[TermuxActivity]@bbdea9b#7
+11-27 09:16:42.328 13658 13658 D VRI[TermuxActivity]@bbdea9b: Start draw after previous draw not visible
+11-27 09:16:42.328 13658 13658 D VRI[TermuxActivity]@bbdea9b: registerCallbacksForSync syncBuffer=false
+11-27 09:16:42.330 13658 13691 D VRI[TermuxActivity]@bbdea9b: Received frameDrawingCallback syncResult=0 frameNum=1.
+11-27 09:16:42.330 13658 13691 I VRI[TermuxActivity]@bbdea9b: mWNT: t=0x7021681dd0 mBlastBufferQueue=0x71616b2660 fn= 1 HdrRenderState mRenderHdrSdrRatio=1.0 caller= android.view.ViewRootImpl$12.onFrameDraw:15441 android.view.ThreadedRenderer$1.onFrameDraw:718 <bottom of call stack> 
+11-27 09:16:42.330 13658 13691 I VRI[TermuxActivity]@bbdea9b: Setting up sync and frameCommitCallback
+11-27 09:16:42.334 13658 13679 I BLASTBufferQueue: [VRI[TermuxActivity]@bbdea9b#2](f:0,a:0,s:0) onFrameAvailable the first frame is available
+11-27 09:16:42.334 13658 13679 I VRI[TermuxActivity]@bbdea9b: Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true
+11-27 09:16:42.335 13658 13658 D VRI[TermuxActivity]@bbdea9b: reportDrawFinished seqId=0
+11-27 09:16:42.335 13658 13658 I InsetsSourceConsumer: applyRequestedVisibilityToControl: visible=true, type=navigationBars, host=com.termux/com.termux.app.TermuxActivity
+11-27 09:16:42.335 13658 13658 I InsetsSourceConsumer: applyRequestedVisibilityToControl: visible=true, type=statusBars, host=com.termux/com.termux.app.TermuxActivity
+11-27 09:16:42.360 13658 13658 D VRI[TermuxActivity]@bbdea9b: mThreadedRenderer.initializeIfNeeded()#2 mSurface={isValid=true 0x7011684e20}
+11-27 09:16:42.361 13658 13658 D InputMethodManagerUtils: startInputInner - Id : 0
+11-27 09:16:42.361 13658 13658 I InputMethodManager: startInputInner - IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus
+11-27 09:16:42.378 13658 13658 I InputMethodManager: handleMessage: setImeVisibility visible=true
+11-27 09:16:42.378 13658 13658 D InsetsController: show(ime(), fromIme=false)
+11-27 09:16:42.378 13658 13658 I ImeTracker: com.termux:6953f094: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+11-27 09:16:42.383 13658 14751 D InputTransport: Input channel constructed: 'ClientS', fd=127
+11-27 09:16:42.548 13658 13658 I InsetsController: onStateChanged: host=com.termux/com.termux.app.TermuxActivity, from=android.view.ViewRootImpl.onInsetsStateChanged:3026, state=InsetsState: {mDisplayFrame=Rect(0, 0 - 1080, 2340), mDisplayCutout=DisplayCutout{insets=Rect(0, 80 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(511, 0 - 569, 80), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2340 physicalDisplayWidth=1080 physicalDisplayHeight=2340 density={2.8125} cutoutSpec={M 0,0 M 0,7.822222222222222‬‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,20.62222222222222‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,-20.62222222222222‬ Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=113, center=Point(113, 113)}, RoundedCorner{position=TopRight, radius=113, center=Point(967, 113)}, RoundedCorner{position=BottomRight, radius=113, center=Point(967, 2227)}, RoundedCorner{position=BottomLeft, radius=113, center=Point(113, 2227)}]}  mRoundedCornerFrame=Rect(0, 0 - 1080, 2340), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(956, 0 - 1080, 80) rotation=0}, mDisplayShape=DisplayShape{ spec=-311912193 displayWidth=1080 displayHeight=2340 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}, mSources= { InsetsSource: {ebb70000 mType=statusBars mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70005 mType=mandatorySystemGestures mFrame=[0,0][1080,114] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70006 mType=tappableElement mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {3 mType=ime mFrame=[0,1321][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {27 mType=displayCutout mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {51210001 mType=navigationBars mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210004 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null}, InsetsSource: {51210005 mType=mandatorySystemGestures mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210006 mType=tappableElement mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210024 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null} }
+11-27 09:16:42.548 13658 13658 I VRI[TermuxActivity]@bbdea9b: handleResized, frames=ClientWindowFrames{frame=[0,0][1080,2340] display=[0,0][1080,2340] parentFrame=[0,0][0,0]} displayId=0 dragResizing=false compatScale=1.0 frameChanged=false attachedFrameChanged=false configChanged=false displayChanged=false compatScaleChanged=false dragResizingChanged=false
+11-27 09:16:42.563 13658 13658 I InsetsController: onStateChanged: host=com.termux/com.termux.app.TermuxActivity, from=android.view.ViewRootImpl.onInsetsStateChanged:3026, state=InsetsState: {mDisplayFrame=Rect(0, 0 - 1080, 2340), mDisplayCutout=DisplayCutout{insets=Rect(0, 80 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(511, 0 - 569, 80), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2340 physicalDisplayWidth=1080 physicalDisplayHeight=2340 density={2.8125} cutoutSpec={M 0,0 M 0,7.822222222222222‬‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,20.62222222222222‬ a 10.31111111111111‬,10.31111111111111‬ 0 1,0 0,-20.62222222222222‬ Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=113, center=Point(113, 113)}, RoundedCorner{position=TopRight, radius=113, center=Point(967, 113)}, RoundedCorner{position=BottomRight, radius=113, center=Point(967, 2227)}, RoundedCorner{position=BottomLeft, radius=113, center=Point(113, 2227)}]}  mRoundedCornerFrame=Rect(0, 0 - 1080, 2340), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(956, 0 - 1080, 80) rotation=0}, mDisplayShape=DisplayShape{ spec=-311912193 displayWidth=1080 displayHeight=2340 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}, mSources= { InsetsSource: {ebb70000 mType=statusBars mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70005 mType=mandatorySystemGestures mFrame=[0,0][1080,114] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {ebb70006 mType=tappableElement mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {3 mType=ime mFrame=[0,1321][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {27 mType=displayCutout mFrame=[0,0][1080,80] mVisible=true mFlags= mSideHint=TOP mBoundingRects=null}, InsetsSource: {51210001 mType=navigationBars mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210004 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null}, InsetsSource: {51210005 mType=mandatorySystemGestures mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210006 mType=tappableElement mFrame=[0,2205][1080,2340] mVisible=true mFlags= mSideHint=BOTTOM mBoundingRects=null}, InsetsSource: {51210024 mType=systemGestures mFrame=[0,0][0,0] mVisible=true mFlags= mSideHint=NONE mBoundingRects=null} }
+11-27 09:16:42.563 13658 13658 I InsetsController: controlAnimationUncheckedInner: Added types=ime, animType=0, host=com.termux/com.termux.app.TermuxActivity, from=android.view.InsetsController.controlAnimationUnchecked:1608 android.view.InsetsController.applyAnimation:2416 android.view.InsetsController.applyAnimation:2343 
+11-27 09:16:42.570 13658 13658 I BLASTBufferQueue_Java: update, w= 1080 h= 2340 mName = VRI[TermuxActivity]@bbdea9b mNativeObject= 0x71616b2660 sc.mNativeObject= 0x70f16553d0 format= -1 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:3574 android.view.ViewRootImpl.relayoutWindow:11685 android.view.ViewRootImpl.performTraversals:4804 android.view.ViewRootImpl.doTraversal:3924 android.view.ViewRootImpl$TraversalRunnable.run:12903 android.view.Choreographer$CallbackRecord.run:1901 
+11-27 09:16:42.570 13658 13658 I VRI[TermuxActivity]@bbdea9b: Relayout returned: old=(0,0,1080,2340) new=(0,0,1080,2340) relayoutAsync=true req=(1080,2340)0 dur=0 res=0x0 s={true 0x7011684e20} ch=false seqId=0
+11-27 09:16:42.570 13658 13658 D AbsListView:  in onLayout changed 
+11-27 09:16:42.571 13658 13658 I VRI[TermuxActivity]@bbdea9b: registerCallbackForPendingTransactions
+11-27 09:16:42.573 13658 13692 I VRI[TermuxActivity]@bbdea9b: mWNT: t=0x702167d450 mBlastBufferQueue=0x71616b2660 fn= 3 HdrRenderState mRenderHdrSdrRatio=1.0 caller= android.view.ViewRootImpl$10.onFrameDraw:6536 android.view.ViewRootImpl$4.onFrameDraw:2489 android.view.ThreadedRenderer$1.onFrameDraw:718 
+11-27 09:16:42.603 13658 13658 I InputMethodManager_LC: showSoftInput(View,I)
+11-27 09:16:42.604 13658 13658 I ImeTracker: com.termux:8221ee05: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+11-27 09:16:42.604 13658 13658 I InputMethodManager_LC: ssi(): flags=0 view=com.termux reason=SHOW_SOFT_INPUT
+11-27 09:16:42.604 13658 13658 I InputMethodManager_LC: ssi() view is not EditText
+11-27 09:16:42.604 13658 13658 D InsetsController: show(ime(), fromIme=false)
+11-27 09:16:42.604 13658 13658 I ImeTracker: com.termux:8221ee05: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+11-27 09:16:42.925 13658 13658 I InsetsController: cancelAnimation: types=ime, animType=0, host=com.termux/com.termux.app.TermuxActivity, from=android.view.InsetsController.notifyFinished:2006 android.view.InsetsAnimationThreadControlRunner$1.lambda$notifyFinished$0:82 android.view.InsetsAnimationThreadControlRunner$1.$r8$lambda$cDFF0h4Ncq-8EXdGszv69jrUu7c:0 
+11-27 09:16:42.925 13658 13658 I ImeTracker: system_server:b6007f74: onShown
+11-27 09:16:46.311 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme key 0
+11-27 09:16:46.311 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme key 1
+11-27 09:16:46.537 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme key 0
+11-27 09:16:46.537 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme key 1
+11-27 09:16:48.410 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme pointer 0
+11-27 09:16:48.412 13658 13658 I VRI[TermuxActivity]@bbdea9b: call setFrameRateCategory for touch hint category=high hint, reason=touch, vri=VRI[TermuxActivity]@bbdea9b
+11-27 09:16:48.412 13658 13658 D Choreographer: BBA2 receive callback when in bg : 0
+11-27 09:16:48.518 13658 13658 I VRI[TermuxActivity]@bbdea9b: ViewPostIme pointer 1
+
+---- [AppDummy run.sh] Fin de capture: Thu Nov 27 09:16:50 CET 2025 ----
+Package: com.example.appdummy  Activity: .MainActivity  PID: unknown

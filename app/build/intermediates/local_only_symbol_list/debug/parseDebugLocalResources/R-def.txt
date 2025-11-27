@@ -1,0 +1,26 @@
+R_DEF: Internal format may change without notice
+local
+color ic_launcher_background
+drawable ic_launcher
+drawable ic_launcher_foreground
+id btnClear
+id btnStart
+id btnStop
+id btnStopScore
+id btnValidate
+id circleMain
+id padPulses
+id padSteps
+id seekBpm
+id seekPulses
+id seekSteps
+id title
+id txtInfo
+id txtScore
+layout activity_main
+layout main
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+string hello_world
+style AppTheme

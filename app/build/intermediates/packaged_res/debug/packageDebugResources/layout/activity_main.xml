@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#111">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- En-tête et infos -->
+        <TextView
+            android:id="@+id/title"
+            android:text="🎵 AppDummy — Cercle Rythmique"
+            android:textSize="20sp"
+            android:textColor="#fff"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/txtInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ccc"
+            android:textSize="14sp"
+            android:text="Info…"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/txtScore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ccc"
+            android:textSize="14sp"
+            android:text="Score…"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Vue principale (ID attendu: circleMain) -->
+        <com.example.appdummy.RhythmCircleView
+            android:id="@+id/circleMain"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Contrôles métronomiques -->
+        <TextView
+            android:text="BPM"
+            android:textColor="#fff"
+            android:layout_marginTop="8dp"/>
+        <SeekBar
+            android:id="@+id/seekBpm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="240"/>
+
+        <TextView
+            android:text="Steps"
+            android:textColor="#fff"
+            android:layout_marginTop="8dp"/>
+        <SeekBar
+            android:id="@+id/seekSteps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="32"/>
+
+        <TextView
+            android:text="Pulses"
+            android:textColor="#fff"
+            android:layout_marginTop="8dp"/>
+        <SeekBar
+            android:id="@+id/seekPulses"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="32"/>
+
+        <!-- Pads attendus (IDs: padSteps / padPulses) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/padSteps"
+                android:text="Pad Steps"
+                android:layout_margin="6dp"/>
+
+            <Button
+                android:id="@+id/padPulses"
+                android:text="Pad Pulses"
+                android:layout_margin="6dp"/>
+        </LinearLayout>
+
+        <!-- Boutons attendus -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/btnStart"
+                android:text="Start"
+                android:layout_margin="4dp"/>
+
+            <Button
+                android:id="@+id/btnStop"
+                android:text="Stop"
+                android:layout_margin="4dp"/>
+
+            <Button
+                android:id="@+id/btnClear"
+                android:text="Clear"
+                android:layout_margin="4dp"/>
+        </LinearLayout>
+
+        <!-- Boutons supplémentaires attendus (IDs: btnStopScore / btnValidate) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnStopScore"
+                android:text="Stop Score"
+                android:layout_margin="4dp"/>
+
+            <Button
+                android:id="@+id/btnValidate"
+                android:text="Validate"
+                android:layout_margin="4dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
