@@ -98,15 +98,20 @@ public class SoundEngine {
         return track;
     }
 
+    /**
+     * Version robuste : on évite stop(), on remet la piste dans un état propre, puis on joue.
+     */
     private void playOnce(AudioTrack t) {
         if (t == null) return;
+        if (t.getState() != AudioTrack.STATE_INITIALIZED) return;
         try {
-            if (t.getPlayState() == AudioTrack.PLAYSTATE_PLAYING) {
-                t.stop();
-            }
+            t.pause();
+            t.flush();
             t.setPlaybackHeadPosition(0);
             t.play();
-        } catch (IllegalStateException ignored) {}
+        } catch (IllegalStateException ignored) {
+            // on ignore ce tick si Android est grognon
+        }
     }
 
     /**
