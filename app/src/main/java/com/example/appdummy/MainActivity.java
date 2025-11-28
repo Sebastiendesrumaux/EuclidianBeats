@@ -919,8 +919,8 @@ public class MainActivity extends AppCompatActivity {
         if (g < 0.0) g = 0.0;
         if (g > 1.0) g = 1.0;
 
-        double volJitter   = 0.4 * g;  // ±40% max
-        double pitchJitter = 0.1 * g;  // ±10% max
+        double volJitter   = 4.0 * g;  // ±40% max
+        double pitchJitter = 1.5 * g;  // ±10% max
 
         double volFactor = 1.0 + (Math.random() * 2.0 - 1.0) * volJitter;
         double pitch     = 1.0 + (Math.random() * 2.0 - 1.0) * pitchJitter;
