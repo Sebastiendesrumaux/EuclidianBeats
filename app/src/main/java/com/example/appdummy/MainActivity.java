@@ -1,6 +1,13 @@
 package com.example.appdummy;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
+import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,9 +17,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +39,36 @@ public class MainActivity extends AppCompatActivity {
     private static final double MIN_BPM = 40.0;
     private static final double MAX_BPM = 260.0;
 
+    private static final int REQ_WAV_KICK       = 1;
+    private static final int REQ_WAV_SNARE      = 2;
+    private static final int REQ_WAV_HAT_OPEN   = 3;
+    private static final int REQ_WAV_HAT_CLOSED = 4;
+
+    private static final String PREFS_NAME = "euclidian_beats_prefs";
+
+    private enum PlayMode { SYNTH, SAMPLE }
+
     private RhythmCircleView circleView;
     private SoundEngine soundEngine;
+
+    // SoundPool pour les samples WAV
+    private SoundPool soundPool;
+    private int sampleKickId      = 0;
+    private int sampleSnareId     = 0;
+    private int sampleHatOpenId   = 0;
+    private int sampleHatClosedId = 0;
+
+    // URIs persistés des samples
+    private Uri uriKick;
+    private Uri uriSnare;
+    private Uri uriHatOpen;
+    private Uri uriHatClosed;
+
+    // mode de lecture par voix
+    private PlayMode modeKick      = PlayMode.SYNTH;
+    private PlayMode modeSnare     = PlayMode.SYNTH;
+    private PlayMode modeHatOpen   = PlayMode.SYNTH;
+    private PlayMode modeHatClosed = PlayMode.SYNTH;
 
     private int steps        = INITIAL_STEPS;
     private int pulsesOrange = INITIAL_PULSES_ORANGE;
@@ -58,11 +95,21 @@ public class MainActivity extends AppCompatActivity {
     private View flashHatOpen;
     private View flashHatClosed;
 
+    // sliders pour pouvoir les manipuler lors du restore/save
+    private SeekBar drumSeek;
+    private SeekBar noteSeek;
+    private TextView drumLabel;
+    private TextView noteLabel;
+
+    // glitch : niveau 0..1, plus un SeekBar et un label
+    private double glitchLevel = 0.0;
+    private SeekBar glitchSeek;
+    private TextView glitchLabel;
+
     private final Runnable tickRunnable = new Runnable() {
         @Override public void run() {
             currentStep = (currentStep + 1) % steps;
 
-            // décision : quels sons DOIVENT jouer à ce step ?
             boolean kick      = circleView.shouldPlayKick(currentStep);
             boolean snare     = circleView.shouldPlaySnare(currentStep);
             boolean hatOpen   = circleView.shouldPlayHatOpen(currentStep);
@@ -70,10 +117,10 @@ public class MainActivity extends AppCompatActivity {
 
             circleView.setCurrentStep(currentStep);
 
-            if (kick)      soundEngine.playKick();
-            if (snare)     soundEngine.playSnare();
-            if (hatOpen)   soundEngine.playHatOpen();
-            if (hatClosed) soundEngine.playHatClosed();
+            if (kick)      playKickVoice();
+            if (snare)     playSnareVoice();
+            if (hatOpen)   playHatOpenVoice();
+            if (hatClosed) playHatClosedVoice();
 
             updateFlashRow(kick, snare, hatOpen, hatClosed);
 
@@ -86,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // --- Layout racine ---
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
@@ -119,15 +167,23 @@ public class MainActivity extends AppCompatActivity {
         plusBlue.setBackgroundColor(0xFF2196F3);
         plusBlue.setText("+ steps");
 
+        Button blueSound = new Button(this);
+        blueSound.setAllCaps(false);
+        blueSound.setTextColor(Color.WHITE);
+        blueSound.setBackgroundColor(0xFF0D47A1);
+        blueSound.setText("Sound");
+
         LinearLayout.LayoutParams lpWeightBlue =
                 new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         minusBlue.setLayoutParams(lpWeightBlue);
         plusBlue.setLayoutParams(lpWeightBlue);
+        blueSound.setLayoutParams(lpWeightBlue);
 
         blueBar.addView(minusBlue);
         blueBar.addView(plusBlue);
+        blueBar.addView(blueSound);
 
-        // Rangées orange / vert / rose : [Random] [ - ] [ + ]
+        // Rangées orange / vert / rose : [Random] [ - ] [ + ] [Sound]
 
         // Orange
         LinearLayout rowOrange = new LinearLayout(this);
@@ -153,15 +209,23 @@ public class MainActivity extends AppCompatActivity {
         orangePlus.setBackgroundColor(0xFFFFCC80);
         orangePlus.setText("+");
 
+        Button orangeSound = new Button(this);
+        orangeSound.setAllCaps(false);
+        orangeSound.setTextColor(Color.BLACK);
+        orangeSound.setBackgroundColor(0xFFBF360C);
+        orangeSound.setText("Sound");
+
         LinearLayout.LayoutParams lpWeightColor =
                 new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         orangeRandom.setLayoutParams(lpWeightColor);
         orangeMinus.setLayoutParams(lpWeightColor);
         orangePlus.setLayoutParams(lpWeightColor);
+        orangeSound.setLayoutParams(lpWeightColor);
 
         rowOrange.addView(orangeRandom);
         rowOrange.addView(orangeMinus);
         rowOrange.addView(orangePlus);
+        rowOrange.addView(orangeSound);
 
         // Vert
         LinearLayout rowGreen = new LinearLayout(this);
@@ -187,13 +251,21 @@ public class MainActivity extends AppCompatActivity {
         greenPlus.setBackgroundColor(0xFFA5D6A7);
         greenPlus.setText("+");
 
+        Button greenSound = new Button(this);
+        greenSound.setAllCaps(false);
+        greenSound.setTextColor(Color.BLACK);
+        greenSound.setBackgroundColor(0xFF1B5E20);
+        greenSound.setText("Sound");
+
         greenRandom.setLayoutParams(lpWeightColor);
         greenMinus.setLayoutParams(lpWeightColor);
         greenPlus.setLayoutParams(lpWeightColor);
+        greenSound.setLayoutParams(lpWeightColor);
 
         rowGreen.addView(greenRandom);
         rowGreen.addView(greenMinus);
         rowGreen.addView(greenPlus);
+        rowGreen.addView(greenSound);
 
         // Rose
         LinearLayout rowPink = new LinearLayout(this);
@@ -219,13 +291,21 @@ public class MainActivity extends AppCompatActivity {
         pinkPlus.setBackgroundColor(0xFFF8BBD0);
         pinkPlus.setText("+");
 
+        Button pinkSound = new Button(this);
+        pinkSound.setAllCaps(false);
+        pinkSound.setTextColor(Color.BLACK);
+        pinkSound.setBackgroundColor(0xFF880E4F);
+        pinkSound.setText("Sound");
+
         pinkRandom.setLayoutParams(lpWeightColor);
         pinkMinus.setLayoutParams(lpWeightColor);
         pinkPlus.setLayoutParams(lpWeightColor);
+        pinkSound.setLayoutParams(lpWeightColor);
 
         rowPink.addView(pinkRandom);
         rowPink.addView(pinkMinus);
         rowPink.addView(pinkPlus);
+        rowPink.addView(pinkSound);
 
         // --- Barre de clignotants (Kick / Snare / Hat open / Hat closed) ---
         LinearLayout flashRow = new LinearLayout(this);
@@ -259,34 +339,56 @@ public class MainActivity extends AppCompatActivity {
         flashRow.addView(flashHatClosed);
 
         // Widgets de volume
-        TextView drumLabel = new TextView(this);
+        drumLabel = new TextView(this);
         drumLabel.setTextColor(Color.WHITE);
         drumLabel.setTextSize(16f);
         drumLabel.setText("Volume des drums : 100 %");
 
-        SeekBar drumSeek = new SeekBar(this);
+        drumSeek = new SeekBar(this);
         drumSeek.setMax(100);
         drumSeek.setProgress(100);
 
-        TextView noteLabel = new TextView(this);
+        noteLabel = new TextView(this);
         noteLabel.setTextColor(Color.WHITE);
         noteLabel.setTextSize(16f);
         noteLabel.setText("Volume des notes : 50 %");
 
-        SeekBar noteSeek = new SeekBar(this);
+        noteSeek = new SeekBar(this);
         noteSeek.setMax(100);
         noteSeek.setProgress(50);
 
+        // Glitch : label + slider horizontal
+        glitchLabel = new TextView(this);
+        glitchLabel.setTextColor(Color.WHITE);
+        glitchLabel.setTextSize(16f);
+        glitchLabel.setText("Glitch level : 0 %");
+
+        glitchSeek = new SeekBar(this);
+        glitchSeek.setMax(100);
+        glitchSeek.setProgress(0);
+
+        // Bouton SAVE
+        Button saveButton = new Button(this);
+        saveButton.setAllCaps(false);
+        saveButton.setTextColor(Color.WHITE);
+        saveButton.setBackgroundColor(0xFF616161);
+        saveButton.setText("Save");
+
+        // Assemblage du layout
         root.addView(circleView);
         root.addView(blueBar);
         root.addView(rowOrange);
         root.addView(rowGreen);
         root.addView(rowPink);
-        root.addView(flashRow);      // <- nouvelle barre de leds
+        root.addView(flashRow);
         root.addView(drumLabel);
         root.addView(drumSeek);
         root.addView(noteLabel);
         root.addView(noteSeek);
+        root.addView(glitchLabel);
+        root.addView(glitchSeek);
+        root.addView(saveButton);
+
         setContentView(root);
 
         // Tempo initial
@@ -300,6 +402,11 @@ public class MainActivity extends AppCompatActivity {
         soundEngine = new SoundEngine(44_100);
         soundEngine.setDrumGain(1.0);
         soundEngine.setNoteGain(0.5);
+
+        // SoundPool pour les samples
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(4)
+                .build();
 
         // Sliders de volume
         drumSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -324,6 +431,22 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        glitchSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                glitchLevel = progress / 100.0;
+                glitchLabel.setText("Glitch level : " + progress + " %");
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        // Bouton SAVE
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                saveState();
+            }
         });
 
         // Taps : carré central = tempo, ailleurs = toggle
@@ -390,6 +513,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Bouton "Sound" bleu
+        blueSound.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                showSoundSourceDialog("Kick (bleu)", new Runnable() {
+                    @Override public void run() { modeKick = PlayMode.SYNTH; }
+                }, REQ_WAV_KICK);
+            }
+        });
+
         // Orange : random / - / +
         orangeRandom.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
@@ -422,6 +554,14 @@ public class MainActivity extends AppCompatActivity {
                     circleView.reactivateAll();
                     updateButtonLabels(orangeRandom, greenRandom, pinkRandom);
                 }
+            }
+        });
+
+        orangeSound.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                showSoundSourceDialog("Snare (orange)", new Runnable() {
+                    @Override public void run() { modeSnare = PlayMode.SYNTH; }
+                }, REQ_WAV_SNARE);
             }
         });
 
@@ -460,6 +600,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        greenSound.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                showSoundSourceDialog("Hat vert", new Runnable() {
+                    @Override public void run() { modeHatOpen = PlayMode.SYNTH; }
+                }, REQ_WAV_HAT_OPEN);
+            }
+        });
+
         // Rose : random / - / +
         pinkRandom.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
@@ -494,6 +642,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        pinkSound.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                showSoundSourceDialog("Hat rose", new Runnable() {
+                    @Override public void run() { modeHatClosed = PlayMode.SYNTH; }
+                }, REQ_WAV_HAT_CLOSED);
+            }
+        });
+
+        // ➜ Restaurer l'état s'il y en a un
+        restoreState(orangeRandom, greenRandom, pinkRandom);
     }
 
     @Override protected void onResume() {
@@ -510,6 +669,10 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         stopLoop();
         if (soundEngine != null) soundEngine.release();
+        if (soundPool != null) {
+            soundPool.release();
+            soundPool = null;
+        }
     }
 
     private void startLoop() {
@@ -605,5 +768,259 @@ public class MainActivity extends AppCompatActivity {
             flashHatOpen.setBackgroundColor(hatOpen ? 0xFF4CAF50 : 0xFF1B5E20);
         if (flashHatClosed != null)
             flashHatClosed.setBackgroundColor(hatClosed ? 0xFFE91E63 : 0xFF880E4F);
+    }
+
+    // --- Gestion des sources sonores (Synth / WAV) ---
+
+    private void showSoundSourceDialog(String title, final Runnable useSynthAction, final int requestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        String[] items = new String[] {
+                "Synthèse interne",
+                "Choisir un fichier WAV…"
+        };
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    // Synthèse
+                    useSynthAction.run();
+                } else if (which == 1) {
+                    // Sélection d'un fichier WAV
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("audio/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {
+                            "audio/wav", "audio/x-wav", "audio/*"
+                    });
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    startActivityForResult(intent, requestCode);
+                }
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || data == null) return;
+
+        Uri uri = data.getData();
+        if (uri == null) return;
+
+        final int takeFlags = data.getFlags()
+                & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        try {
+            getContentResolver().takePersistableUriPermission(uri, takeFlags);
+        } catch (SecurityException ignored) {}
+
+        // Mémoriser l'URI
+        switch (requestCode) {
+            case REQ_WAV_KICK:
+                uriKick = uri;
+                break;
+            case REQ_WAV_SNARE:
+                uriSnare = uri;
+                break;
+            case REQ_WAV_HAT_OPEN:
+                uriHatOpen = uri;
+                break;
+            case REQ_WAV_HAT_CLOSED:
+                uriHatClosed = uri;
+                break;
+            default:
+                break;
+        }
+
+        // Charger le sample
+        reloadSampleFromUri(uri, requestCode);
+    }
+
+    private void reloadSampleFromUri(Uri uri, int requestCode) {
+        if (uri == null || soundPool == null) return;
+        try {
+            AssetFileDescriptor afd = getContentResolver().openAssetFileDescriptor(uri, "r");
+            if (afd == null) return;
+            int soundId = soundPool.load(afd, 1);
+            afd.close();
+
+            switch (requestCode) {
+                case REQ_WAV_KICK:
+                    sampleKickId = soundId;
+                    modeKick = PlayMode.SAMPLE;
+                    break;
+                case REQ_WAV_SNARE:
+                    sampleSnareId = soundId;
+                    modeSnare = PlayMode.SAMPLE;
+                    break;
+                case REQ_WAV_HAT_OPEN:
+                    sampleHatOpenId = soundId;
+                    modeHatOpen = PlayMode.SAMPLE;
+                    break;
+                case REQ_WAV_HAT_CLOSED:
+                    sampleHatClosedId = soundId;
+                    modeHatClosed = PlayMode.SAMPLE;
+                    break;
+                default:
+                    break;
+            }
+        } catch (IOException e) {
+            // en cas d'échec, on laisse le mode synth
+        }
+    }
+
+    // --- Helpers de lecture en fonction du mode + glitch ---
+
+    private void playKickVoice() {
+        if (modeKick == PlayMode.SAMPLE && soundPool != null && sampleKickId != 0) {
+            float[] vAndP = makeGlitchedVolumeAndPitch();
+            soundPool.play(sampleKickId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+        } else {
+            soundEngine.playKick();
+        }
+    }
+
+    private void playSnareVoice() {
+        if (modeSnare == PlayMode.SAMPLE && soundPool != null && sampleSnareId != 0) {
+            float[] vAndP = makeGlitchedVolumeAndPitch();
+            soundPool.play(sampleSnareId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+        } else {
+            soundEngine.playSnare();
+        }
+    }
+
+    private void playHatOpenVoice() {
+        if (modeHatOpen == PlayMode.SAMPLE && soundPool != null && sampleHatOpenId != 0) {
+            float[] vAndP = makeGlitchedVolumeAndPitch();
+            soundPool.play(sampleHatOpenId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+        } else {
+            soundEngine.playHatOpen();
+        }
+    }
+
+    private void playHatClosedVoice() {
+        if (modeHatClosed == PlayMode.SAMPLE && soundPool != null && sampleHatClosedId != 0) {
+            float[] vAndP = makeGlitchedVolumeAndPitch();
+            soundPool.play(sampleHatClosedId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+        } else {
+            soundEngine.playHatClosed();
+        }
+    }
+
+    /**
+     * Calcule un (volume, pitch) légèrement aléatoire en fonction de glitchLevel.
+     * glitchLevel=0  => (1.0, 1.0)
+     * glitchLevel=1  => volume ~ [0.6, 1.4], pitch ~ [0.9, 1.1]
+     */
+    private float[] makeGlitchedVolumeAndPitch() {
+        double g = glitchLevel;
+        if (g < 0.0) g = 0.0;
+        if (g > 1.0) g = 1.0;
+
+        double volJitter   = 0.4 * g;  // ±40% max
+        double pitchJitter = 0.1 * g;  // ±10% max
+
+        double volFactor = 1.0 + (Math.random() * 2.0 - 1.0) * volJitter;
+        double pitch     = 1.0 + (Math.random() * 2.0 - 1.0) * pitchJitter;
+
+        if (volFactor < 0.0) volFactor = 0.0;
+        if (volFactor > 2.0) volFactor = 2.0;
+        if (pitch < 0.5) pitch = 0.5;
+        if (pitch > 2.0) pitch = 2.0;
+
+        return new float[] { (float) volFactor, (float) pitch };
+    }
+
+    // --- Sauvegarde / restauration de l'état ---
+
+    private void saveState() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor e = prefs.edit();
+
+        e.putBoolean("has_state", true);
+        e.putInt("steps", steps);
+        e.putInt("pulsesOrange", pulsesOrange);
+        e.putInt("pulsesGreen", pulsesGreen);
+        e.putInt("pulsesPink", pulsesPink);
+        e.putFloat("bpm", (float) currentBpm);
+
+        if (drumSeek != null) e.putInt("drumVol", drumSeek.getProgress());
+        if (noteSeek != null) e.putInt("noteVol", noteSeek.getProgress());
+
+        e.putFloat("glitchLevel", (float) glitchLevel);
+        if (glitchSeek != null) e.putInt("glitchProgress", glitchSeek.getProgress());
+
+        e.putInt("modeKick",      (modeKick      == PlayMode.SAMPLE) ? 1 : 0);
+        e.putInt("modeSnare",     (modeSnare     == PlayMode.SAMPLE) ? 1 : 0);
+        e.putInt("modeHatOpen",   (modeHatOpen   == PlayMode.SAMPLE) ? 1 : 0);
+        e.putInt("modeHatClosed", (modeHatClosed == PlayMode.SAMPLE) ? 1 : 0);
+
+        e.putString("uriKick",      (uriKick      != null) ? uriKick.toString()      : null);
+        e.putString("uriSnare",     (uriSnare     != null) ? uriSnare.toString()     : null);
+        e.putString("uriHatOpen",   (uriHatOpen   != null) ? uriHatOpen.toString()   : null);
+        e.putString("uriHatClosed", (uriHatClosed != null) ? uriHatClosed.toString() : null);
+
+        e.apply();
+
+        Toast.makeText(this, "État sauvegardé", Toast.LENGTH_SHORT).show();
+    }
+
+    private void restoreState(Button orangeRandom, Button greenRandom, Button pinkRandom) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (!prefs.getBoolean("has_state", false)) return;
+
+        steps        = prefs.getInt("steps", steps);
+        pulsesOrange = prefs.getInt("pulsesOrange", pulsesOrange);
+        pulsesGreen  = prefs.getInt("pulsesGreen",  pulsesGreen);
+        pulsesPink   = prefs.getInt("pulsesPink",   pulsesPink);
+
+        float bpm = prefs.getFloat("bpm", (float) DEFAULT_BPM);
+        applyBpm(bpm); // remet le tempo (et relance la boucle)
+
+        int drumVol = prefs.getInt("drumVol", 100);
+        int noteVol = prefs.getInt("noteVol", 50);
+        if (drumSeek != null) drumSeek.setProgress(drumVol);
+        if (noteSeek != null) noteSeek.setProgress(noteVol);
+
+        glitchLevel = prefs.getFloat("glitchLevel", 0f);
+        int glitchProg = prefs.getInt("glitchProgress", (int) (glitchLevel * 100f));
+        if (glitchSeek != null) glitchSeek.setProgress(glitchProg);
+        if (glitchLabel != null) {
+            glitchLabel.setText("Glitch level : " + glitchProg + " %");
+        }
+
+        modeKick      = (prefs.getInt("modeKick", 0)      == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
+        modeSnare     = (prefs.getInt("modeSnare", 0)     == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
+        modeHatOpen   = (prefs.getInt("modeHatOpen", 0)   == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
+        modeHatClosed = (prefs.getInt("modeHatClosed", 0) == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
+
+        String sKick      = prefs.getString("uriKick", null);
+        String sSnare     = prefs.getString("uriSnare", null);
+        String sHatOpen   = prefs.getString("uriHatOpen", null);
+        String sHatClosed = prefs.getString("uriHatClosed", null);
+
+        if (sKick != null) {
+            uriKick = Uri.parse(sKick);
+            reloadSampleFromUri(uriKick, REQ_WAV_KICK);
+        }
+        if (sSnare != null) {
+            uriSnare = Uri.parse(sSnare);
+            reloadSampleFromUri(uriSnare, REQ_WAV_SNARE);
+        }
+        if (sHatOpen != null) {
+            uriHatOpen = Uri.parse(sHatOpen);
+            reloadSampleFromUri(uriHatOpen, REQ_WAV_HAT_OPEN);
+        }
+        if (sHatClosed != null) {
+            uriHatClosed = Uri.parse(sHatClosed);
+            reloadSampleFromUri(uriHatClosed, REQ_WAV_HAT_CLOSED);
+        }
+
+        clampPulsesToSteps();
+        recomputePatternsAndUpdateView();
+        circleView.reactivateAll();
+        updateButtonLabels(orangeRandom, greenRandom, pinkRandom);
     }
 }
