@@ -1,5 +1,6 @@
 package com.example.appdummy;
-
+import android.graphics.Color;
+import android.content.Context;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.pm.PackageManager;
@@ -13,6 +14,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.SeekBar;
+
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -49,16 +53,24 @@ public class MicSampleRecorder {
     private File outputFile;
     private MediaPlayer mediaPlayer;
 
-    private AlertDialog dialog;
+
+
+    private WaveformView waveformView; // <--- AJOUT
+private AlertDialog dialog;
     private Button btnRec;
     private Button btnStop;
     private Button btnPlay;
     private Button btnOk;
     private TextView label;
 
+    
 
-    private WaveformView waveformView; // <--- AJOUT
+    // --- AJOUTS ---
+    private short[] currentPcm = null;   // dernier buffer audio en mémoire
 
+    private SeekBar trimSeek;
+    private TextView trimLabel;
+    private double trimThreshold = 0.05; // 5% de la pleine échelle par défaut
 
     private static final int SAMPLE_RATE = 44100;
 
@@ -94,6 +106,42 @@ public class MicSampleRecorder {
         wfLp.topMargin = dpToPx(8);
         wfLp.bottomMargin = dpToPx(8);
         root.addView(waveformView, wfLp);
+        
+        // --- Ligne Trim / Normalize ---
+        LinearLayout rowEdit = new LinearLayout(activity);
+        rowEdit.setOrientation(LinearLayout.HORIZONTAL);
+        root.addView(rowEdit);
+
+        Button btnTrim = new Button(activity);
+        btnTrim.setText("Trim");
+        Button btnNorm = new Button(activity);
+        btnNorm.setText("Normalize");
+
+        LinearLayout.LayoutParams lpEdit =
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        rowEdit.addView(btnTrim, lpEdit);
+        rowEdit.addView(btnNorm, lpEdit);
+
+        // --- Seuil de trim ---
+        trimLabel = new TextView(activity);
+        trimLabel.setText("Trim threshold : 5 %");
+        root.addView(trimLabel);
+
+        trimSeek = new SeekBar(activity);
+        trimSeek.setMax(100);
+        trimSeek.setProgress(5); // 5% par défaut
+        root.addView(trimSeek);
+
+        trimSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress < 0) progress = 0;
+                if (progress > 100) progress = 100;
+                trimThreshold = progress / 100.0; // 0.00 à 1.00
+                trimLabel.setText("Trim threshold : " + progress + " %");
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
         
         LinearLayout row = new LinearLayout(activity);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -132,7 +180,17 @@ public class MicSampleRecorder {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { confirm(); }
         });
+btnTrim.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                trimCurrentPcm();
+            }
+        });
 
+        btnNorm.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                normalizeCurrentPcm();
+            }
+        });
         dialog = new AlertDialog.Builder(activity)
                 .setTitle("Enregistrement micro")
                 .setView(root)
@@ -199,43 +257,142 @@ public class MicSampleRecorder {
         btnRec.setEnabled(true);
         btnStop.setEnabled(false);
 
+            
         short[] pcm = new short[length];
         System.arraycopy(buffer, 0, pcm, 0, length);
-        normalize(pcm);
-        saveWav(pcm);
 
+        // On garde le buffer en mémoire
+        currentPcm = pcm;
 
+        // Normalisation automatique de base (tu peux l’enlever si tu veux un flux brut)
+        normalize(currentPcm);
+
+        // Sauvegarde sur disque
+        saveWav(currentPcm);
+
+        // Mise à jour visuelle
         if (waveformView != null) {
-            waveformView.setWaveform(pcm);  // <--- AJOUT
+            waveformView.setWaveform(currentPcm);
         }
-
-       
-
 
         btnPlay.setEnabled(true);
         btnOk.setEnabled(true);
         label.setText("Fichier prêt.");
         
         
-        
-        
     }
 
+    /**
+     * Retire la composante continue et normalise le signal
+     * au plus près du max sans saturer (marge de 5%).
+     */
     private void normalize(short[] pcm) {
-        int max = 1;
+        if (pcm == null || pcm.length == 0) return;
+
+        // 1) Moyenne (DC)
+        double sum = 0.0;
         for (short s : pcm) {
-            int a = Math.abs(s);
-            if (a > max) max = a;
+            sum += s;
         }
-        double gain = 0.9 * 32767.0 / max;
+        double mean = sum / pcm.length;
+
+        // 2) Recherche du max après retrait de la moyenne
+        double maxAbs = 0.0;
+        for (short s : pcm) {
+            double v = s - mean;
+            double a = Math.abs(v);
+            if (a > maxAbs) maxAbs = a;
+        }
+        if (maxAbs < 1.0) {
+            // signal trop faible ou nul, on évite des gains monstrueux
+            return;
+        }
+
+        // 3) Gain pour aller frôler la saturation (95% du max)
+        double gain = 0.95 * 32767.0 / maxAbs;
+
         for (int i = 0; i < pcm.length; i++) {
-            double x = pcm[i] * gain;
-            if (x > 32767) x = 32767;
-            if (x < -32768) x = -32768;
-            pcm[i] = (short) x;
+            double v = (pcm[i] - mean) * gain;
+            if (v > 32767.0) v = 32767.0;
+            if (v < -32768.0) v = -32768.0;
+            pcm[i] = (short) Math.round(v);
         }
     }
+/**
+     * Coupe les silences au début et à la fin selon trimThreshold (0..1).
+     * Met à jour le WAV et l’oscilloscope.
+     */
+    private void trimCurrentPcm() {
+        if (currentPcm == null || currentPcm.length == 0) {
+            label.setText("Rien à trimmer.");
+            return;
+        }
 
+        double th = trimThreshold;
+        if (th < 0.0) th = 0.0;
+        if (th > 1.0) th = 1.0;
+
+        int threshold = (int) Math.round(th * 32767.0);
+
+        int n = currentPcm.length;
+        int start = 0;
+        int end   = n - 1;
+
+        // Cherche premier échantillon au-dessus du seuil
+        while (start < n) {
+            int a = Math.abs(currentPcm[start]);
+            if (a >= threshold) break;
+            start++;
+        }
+
+        // Cherche dernier échantillon au-dessus du seuil
+        while (end >= 0) {
+            int a = Math.abs(currentPcm[end]);
+            if (a >= threshold) break;
+            end--;
+        }
+
+        if (start >= end) {
+            // tout est en dessous du seuil : on garde tel quel
+            label.setText("Signal trop faible pour trim.");
+            return;
+        }
+
+        int newLen = end - start + 1;
+        short[] trimmed = new short[newLen];
+        System.arraycopy(currentPcm, start, trimmed, 0, newLen);
+        currentPcm = trimmed;
+
+        // Réécriture du fichier WAV
+        saveWav(currentPcm);
+
+        // Mise à jour visuelle
+        if (waveformView != null) {
+            waveformView.setWaveform(currentPcm);
+        }
+
+        label.setText("Trim OK (" + newLen + " échantillons).");
+    }
+
+    /**
+     * Applique normalize() sur currentPcm, resauvegarde le WAV,
+     * met à jour l’oscilloscope.
+     */
+    private void normalizeCurrentPcm() {
+        if (currentPcm == null || currentPcm.length == 0) {
+            label.setText("Rien à normaliser.");
+            return;
+        }
+
+        normalize(currentPcm);
+        saveWav(currentPcm);
+
+        if (waveformView != null) {
+            waveformView.setWaveform(currentPcm);
+        }
+
+        label.setText("Normalize OK.");
+    }
     private void saveWav(short[] pcm) {
         try {
             outputFile = new File(activity.getFilesDir(), name + ".wav");
