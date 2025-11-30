@@ -539,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
         // Bouton "Sound" bleu
         blueSound.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                showSoundSourceDialog("Kick (bleu)", new Runnable() {
+                showSoundSourceDialog("(blue)", new Runnable() {
                     @Override public void run() { modeKick = PlayMode.SYNTH; }
                 }, REQ_WAV_KICK);
             }
@@ -582,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
 
         orangeSound.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                showSoundSourceDialog("Snare (orange)", new Runnable() {
+                showSoundSourceDialog("(orange)", new Runnable() {
                     @Override public void run() { modeSnare = PlayMode.SYNTH; }
                 }, REQ_WAV_SNARE);
             }
@@ -625,7 +625,7 @@ public class MainActivity extends AppCompatActivity {
 
         greenSound.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                showSoundSourceDialog("Hat vert", new Runnable() {
+                showSoundSourceDialog("(green)", new Runnable() {
                     @Override public void run() { modeHatOpen = PlayMode.SYNTH; }
                 }, REQ_WAV_HAT_OPEN);
             }
@@ -668,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
 
         pinkSound.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                showSoundSourceDialog("Hat rose", new Runnable() {
+                showSoundSourceDialog("(pink)", new Runnable() {
                     @Override public void run() { modeHatClosed = PlayMode.SYNTH; }
                 }, REQ_WAV_HAT_CLOSED);
             }
