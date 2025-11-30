@@ -13,6 +13,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.AttributeSet;
+import android.view.View;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -50,6 +56,10 @@ public class MicSampleRecorder {
     private Button btnOk;
     private TextView label;
 
+
+    private WaveformView waveformView; // <--- AJOUT
+
+
     private static final int SAMPLE_RATE = 44100;
 
     public MicSampleRecorder(MainActivity activity, String name, OnSampleReadyListener cb) {
@@ -75,7 +85,16 @@ public class MicSampleRecorder {
         label = new TextView(activity);
         label.setText("Prêt à enregistrer…");
         root.addView(label);
-
+// Vue de forme d'onde (initialement vide)
+        waveformView = new WaveformView(activity);
+        LinearLayout.LayoutParams wfLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(120)  // hauteur raisonnable
+        );
+        wfLp.topMargin = dpToPx(8);
+        wfLp.bottomMargin = dpToPx(8);
+        root.addView(waveformView, wfLp);
+        
         LinearLayout row = new LinearLayout(activity);
         row.setOrientation(LinearLayout.HORIZONTAL);
         root.addView(row);
@@ -185,9 +204,21 @@ public class MicSampleRecorder {
         normalize(pcm);
         saveWav(pcm);
 
+
+        if (waveformView != null) {
+            waveformView.setWaveform(pcm);  // <--- AJOUT
+        }
+
+       
+
+
         btnPlay.setEnabled(true);
         btnOk.setEnabled(true);
         label.setText("Fichier prêt.");
+        
+        
+        
+        
     }
 
     private void normalize(short[] pcm) {
@@ -284,4 +315,98 @@ public class MicSampleRecorder {
             dialog.dismiss();
         }
     }
+    private int dpToPx(int dp) {
+        float d = activity.getResources().getDisplayMetrics().density;
+        return (int) (dp * d + 0.5f);
+    }
+    /**
+     * Petite vue d’oscilloscope : trace la forme d'onde normalisée
+     * à partir d'un tableau de short[].
+     */
+    private static class WaveformView extends View {
+
+        private float[] samples = null; // valeurs dans [-1, 1]
+        private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint bgPaint   = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        public WaveformView(Context context) {
+            super(context);
+            init();
+        }
+
+        public WaveformView(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            init();
+        }
+
+        private void init() {
+            bgPaint.setColor(Color.BLACK);
+            bgPaint.setStyle(Paint.Style.FILL);
+
+            linePaint.setColor(Color.GREEN);
+            linePaint.setStyle(Paint.Style.STROKE);
+            linePaint.setStrokeWidth(2f);
+        }
+
+        /**
+         * Fournit un buffer PCM 16 bits, qu'on convertit en
+         * tableau flottant [-1,1] avec décimation pour ne pas surcharger le dessin.
+         */
+        public void setWaveform(short[] pcm) {
+            if (pcm == null || pcm.length == 0) {
+                samples = null;
+                invalidate();
+                return;
+            }
+
+            int maxPoints = 1000; // on ne dessine pas plus de 1000 points
+            int len = pcm.length;
+            if (len <= maxPoints) {
+                samples = new float[len];
+                for (int i = 0; i < len; i++) {
+                    samples[i] = pcm[i] / 32768f;
+                }
+            } else {
+                samples = new float[maxPoints];
+                double step = len / (double) maxPoints;
+                for (int i = 0; i < maxPoints; i++) {
+                    int idx = (int) Math.round(i * step);
+                    if (idx < 0) idx = 0;
+                    if (idx >= len) idx = len - 1;
+                    samples[i] = pcm[idx] / 32768f;
+                }
+            }
+            invalidate();
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            int w = getWidth();
+            int h = getHeight();
+
+            canvas.drawRect(0, 0, w, h, bgPaint);
+
+            if (samples == null || samples.length < 2) return;
+
+            float midY = h / 2f;
+            float scaleY = (h * 0.45f); // marge en haut/bas
+
+            int n = samples.length;
+            float dx = (w - 1f) / (float) (n - 1);
+
+            float prevX = 0f;
+            float prevY = midY - samples[0] * scaleY;
+
+            for (int i = 1; i < n; i++) {
+                float x = i * dx;
+                float y = midY - samples[i] * scaleY;
+                canvas.drawLine(prevX, prevY, x, y, linePaint);
+                prevX = x;
+                prevY = y;
+            }
+        }
+    }
+    
 }
