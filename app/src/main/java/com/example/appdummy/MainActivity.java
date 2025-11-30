@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private boolean isPlaying = true; // état initial : le séquenceur tourne
+
 
     private static final int MIN_STEPS = 2;
     private static final int MAX_STEPS = 32;
@@ -410,7 +412,36 @@ public class MainActivity extends AppCompatActivity {
         root.addView(noteSeek);
         root.addView(glitchLabel);
         root.addView(glitchSeek);
-        root.addView(saveButton);
+        // --- Bandeau Play/Stop + Save ---
+        LinearLayout bottomBar = new LinearLayout(this);
+        bottomBar.setOrientation(LinearLayout.HORIZONTAL);
+        bottomBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        bottomBar.setPadding(10,10,10,10);
+        
+        Button playStopButton = new Button(this);
+        playStopButton.setAllCaps(false);
+        playStopButton.setTextColor(Color.WHITE);
+        playStopButton.setBackgroundColor(0xFF424242);
+        playStopButton.setText(isPlaying ? "Stop" : "Play");
+        playStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                if (isPlaying) {
+                    isPlaying = false;
+                    handler.removeCallbacks(tickRunnable);
+                    playStopButton.setText("Play");
+                } else {
+                    isPlaying = true;
+                    handler.post(tickRunnable);
+                    playStopButton.setText("Stop");
+                }
+            }
+        });
+        
+        bottomBar.addView(playStopButton, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        bottomBar.addView(saveButton, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        
+        root.addView(bottomBar);
+
 
         setContentView(root);
 
@@ -956,7 +987,7 @@ public class MainActivity extends AppCompatActivity {
         if (g > 1.0) g = 1.0;
 
         double volJitter   = 4.0 * g;  // ±40% max
-        double pitchJitter = 1.5 * g;  // ±10% max
+        double pitchJitter = 1.5 * g / 4;  // ±10% max
 
         double volFactor = 1.0 + (Math.random() * 2.0 - 1.0) * volJitter;
         double pitch     = 1.0 + (Math.random() * 2.0 - 1.0) * pitchJitter;
