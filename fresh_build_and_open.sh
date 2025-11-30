@@ -1,10 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
+#exec > >(tee last_build.log) 2>&1
+
 set -e
 
 echo "▶️ Build direct avec Gradle (assembleDebug)…"
 # Sur /storage/emulated/0 on ne peut pas exécuter ./gradlew (noexec),
 # donc on passe par bash :
-bash ./gradlew assembleDebug
+(bash ./gradlew assembleDebug 2>&1 | tee /dev/tty | termux-clipboard-set)
 
 echo "▶️ Recherche de l'APK debug produit par Gradle…"
 
@@ -35,4 +37,6 @@ termux-open "$APK_DST"
 
 echo
 echo "ℹ️ L'installateur Android devrait s'ouvrir."
-echo "   Choisis « Installer », puis « Ouvrir » pour lancer la nouvelle version."
+echo "   Choisis « Installer », puis « Ouvrir » pour lancer la nouvelle version." 
+#cat last_build.log | termux-clipboard-set
+

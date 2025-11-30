@@ -802,7 +802,8 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle(title);
         String[] items = new String[] {
                 "Synthèse interne",
-                "Choisir un fichier WAV…"
+                "Choisir un fichier WAV…",
+                "Enregistrer depuis le micro…"
         };
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface dialog, int which) {
@@ -820,6 +821,16 @@ public class MainActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     startActivityForResult(intent, requestCode);
+                } else if (which == 2) {
+                    MicSampleRecorder rec = new MicSampleRecorder(MainActivity.this, "mic_rec",
+                        new MicSampleRecorder.OnSampleReadyListener() {
+                            @Override public void onSampleReady(java.io.File wav) {
+                                android.net.Uri u = android.net.Uri.fromFile(wav);
+                                reloadSampleFromUri(u, requestCode);
+                            }
+                        }
+                    );
+                    rec.show();
                 }
             }
         });
