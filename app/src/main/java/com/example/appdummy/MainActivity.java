@@ -1,6 +1,5 @@
-
-
 package com.example.appdummy;
+
 import java.io.File;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -30,7 +29,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private boolean isPlaying = true; // état initial : le séquenceur tourne
-
 
     private static final int MIN_STEPS = 2;
     private static final int MAX_STEPS = 32;
@@ -68,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
     private Uri uriSnare;
     private Uri uriHatOpen;
     private Uri uriHatClosed;
-// Indique si la voix utilise un sample provenant du micro
+
+    // Indique si la voix utilise un sample provenant du micro
     private boolean fromMicKick      = false;
     private boolean fromMicSnare     = false;
     private boolean fromMicHatOpen   = false;
@@ -79,11 +78,15 @@ public class MainActivity extends AppCompatActivity {
     private String micSnareFile;
     private String micHatOpenFile;
     private String micHatClosedFile;
+
     // mode de lecture par voix
     private PlayMode modeKick      = PlayMode.SYNTH;
     private PlayMode modeSnare     = PlayMode.SYNTH;
     private PlayMode modeHatOpen   = PlayMode.SYNTH;
     private PlayMode modeHatClosed = PlayMode.SYNTH;
+
+    // Player 3D pour le kick (samples micro)
+    private SpatialSamplePlayer kick3D = null;
 
     private int steps        = INITIAL_STEPS;
     private int pulsesOrange = INITIAL_PULSES_ORANGE;
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             currentStep = (currentStep + 1) % steps;
 
             boolean kick      = circleView.shouldPlayKick(currentStep);
-        if (isBlueMuted) kick = false;
+            if (isBlueMuted) kick = false;
             boolean snare     = circleView.shouldPlaySnare(currentStep);
             boolean hatOpen   = circleView.shouldPlayHatOpen(currentStep);
             boolean hatClosed = circleView.shouldPlayHatClosed(currentStep);
@@ -424,12 +427,15 @@ public class MainActivity extends AppCompatActivity {
         root.addView(noteSeek);
         root.addView(glitchLabel);
         root.addView(glitchSeek);
+
         // --- Bandeau Play/Stop + Save ---
         LinearLayout bottomBar = new LinearLayout(this);
         bottomBar.setOrientation(LinearLayout.HORIZONTAL);
-        bottomBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        bottomBar.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
         bottomBar.setPadding(10,10,10,10);
-        
+
         Button playStopButton = new Button(this);
         playStopButton.setAllCaps(false);
         playStopButton.setTextColor(Color.WHITE);
@@ -448,12 +454,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        
-        bottomBar.addView(playStopButton, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        bottomBar.addView(saveButton, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        
-        root.addView(bottomBar);
 
+        bottomBar.addView(playStopButton, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        bottomBar.addView(saveButton,     new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+        root.addView(bottomBar);
 
         setContentView(root);
 
@@ -739,6 +744,10 @@ public class MainActivity extends AppCompatActivity {
             soundPool.release();
             soundPool = null;
         }
+        if (kick3D != null) {
+            kick3D.release();
+            kick3D = null;
+        }
     }
 
     private void startLoop() {
@@ -839,7 +848,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // --- Gestion des sources sonores (Synth / WAV) ---
-private void showSoundSourceDialog(String title, final Runnable useSynthAction, final int requestCode) {
+    private void showSoundSourceDialog(String title, final Runnable useSynthAction, final int requestCode) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
         String[] items = new String[] {
@@ -954,6 +963,18 @@ private void showSoundSourceDialog(String title, final Runnable useSynthAction, 
                                     }
                                     // Et on charge le sample dans le SoundPool
                                     reloadSampleFromMicFile(wav, requestCode);
+
+                                    // Si c'est le KICK, on prépare aussi le player 3D
+                                    if (requestCode == REQ_WAV_KICK) {
+                                        try {
+                                            kick3D = new SpatialSamplePlayer(wav);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(MainActivity.this,
+                                                    "Erreur lors du chargement 3D : " + e.getMessage(),
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    }
                                 }
                             }
                     );
@@ -963,7 +984,7 @@ private void showSoundSourceDialog(String title, final Runnable useSynthAction, 
         });
         builder.show();
     }
-    
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1014,13 +1035,13 @@ private void showSoundSourceDialog(String title, final Runnable useSynthAction, 
                     sampleKickId = soundId;
                     modeKick = PlayMode.SAMPLE;
                     fromMicKick = false;
-                micKickFile = null;
+                    micKickFile = null;
                     break;
                 case REQ_WAV_SNARE:
                     sampleSnareId = soundId;
                     modeSnare = PlayMode.SAMPLE;
                     fromMicSnare = false;
-                micSnareFile = null;
+                    micSnareFile = null;
                     break;
                 case REQ_WAV_HAT_OPEN:
                     sampleHatOpenId = soundId;
@@ -1041,7 +1062,8 @@ private void showSoundSourceDialog(String title, final Runnable useSynthAction, 
             // en cas d'échec, on laisse le mode synth
         }
     }
-private void reloadSampleFromMicFile(File wav, int requestCode) {
+
+    private void reloadSampleFromMicFile(File wav, int requestCode) {
         if (wav == null || !wav.exists() || soundPool == null) return;
 
         int soundId = soundPool.load(wav.getPath(), 1);
@@ -1050,7 +1072,7 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
             case REQ_WAV_KICK:
                 sampleKickId = soundId;
                 modeKick = PlayMode.SAMPLE;
-                uriKick = null; // on n'utilise plus l'URI extern
+                uriKick = null; // on n'utilise plus l'URI externe
                 break;
             case REQ_WAV_SNARE:
                 sampleSnareId = soundId;
@@ -1071,12 +1093,29 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
                 break;
         }
     }
+
     // --- Helpers de lecture en fonction du mode + glitch ---
 
     private void playKickVoice() {
-        if (modeKick == PlayMode.SAMPLE && soundPool != null && sampleKickId != 0) {
-            float[] vAndP = makeGlitchedVolumeAndPitch();
-            soundPool.play(sampleKickId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+        if (modeKick == PlayMode.SAMPLE) {
+            // Si c'est un sample micro et qu'on a un player 3D, on l'utilise
+            if (fromMicKick && kick3D != null) {
+              
+              double angle = (currentStep % 4 == 0) ? -90 :
+               (currentStep % 4 == 1) ? -30 :
+               (currentStep % 4 == 2) ? +30 :
+                                        +90;
+kick3D.play(angle, 0.0, 1.0);
+               // double angle = currentStep * (360.0 / steps);
+              //  kick3D.play(45, 0.0, 1.3);
+            }
+            // Sinon, on retombe sur le SoundPool "plat"
+            else if (soundPool != null && sampleKickId != 0) {
+                float[] vAndP = makeGlitchedVolumeAndPitch();
+                soundPool.play(sampleKickId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+            } else {
+                soundEngine.playKick();
+            }
         } else {
             soundEngine.playKick();
         }
@@ -1119,7 +1158,7 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
         if (g < 0.0) g = 0.0;
         if (g > 1.0) g = 1.0;
 
-        double volJitter   = 4.0 * g;  // ±40% max
+        double volJitter   = 4.0 * g;      // ±40% max
         double pitchJitter = 1.5 * g / 4;  // ±10% max
 
         double volFactor = 1.0 + (Math.random() * 2.0 - 1.0) * volJitter;
@@ -1161,7 +1200,8 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
         e.putString("uriSnare",     (uriSnare     != null) ? uriSnare.toString()     : null);
         e.putString("uriHatOpen",   (uriHatOpen   != null) ? uriHatOpen.toString()   : null);
         e.putString("uriHatClosed", (uriHatClosed != null) ? uriHatClosed.toString() : null);
-// Infos sur les samples issus du micro
+
+        // Infos sur les samples issus du micro
         e.putBoolean("fromMicKick",      fromMicKick);
         e.putBoolean("fromMicSnare",     fromMicSnare);
         e.putBoolean("fromMicHatOpen",   fromMicHatOpen);
@@ -1205,7 +1245,6 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
         modeHatOpen   = (prefs.getInt("modeHatOpen", 0)   == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
         modeHatClosed = (prefs.getInt("modeHatClosed", 0) == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
 
-
         String sKick      = prefs.getString("uriKick", null);
         String sSnare     = prefs.getString("uriSnare", null);
         String sHatOpen   = prefs.getString("uriHatOpen", null);
@@ -1227,21 +1266,30 @@ private void reloadSampleFromMicFile(File wav, int requestCode) {
             uriHatClosed = Uri.parse(sHatClosed);
             reloadSampleFromUri(uriHatClosed, REQ_WAV_HAT_CLOSED);
         }
+
         fromMicKick      = prefs.getBoolean("fromMicKick",      false);
-fromMicSnare     = prefs.getBoolean("fromMicSnare",     false);
-fromMicHatOpen   = prefs.getBoolean("fromMicHatOpen",   false);
-fromMicHatClosed = prefs.getBoolean("fromMicHatClosed", false);
+        fromMicSnare     = prefs.getBoolean("fromMicSnare",     false);
+        fromMicHatOpen   = prefs.getBoolean("fromMicHatOpen",   false);
+        fromMicHatClosed = prefs.getBoolean("fromMicHatClosed", false);
 
-micKickFile      = prefs.getString("micKickFile",      null);
-micSnareFile     = prefs.getString("micSnareFile",     null);
-micHatOpenFile   = prefs.getString("micHatOpenFile",   null);
-micHatClosedFile = prefs.getString("micHatClosedFile", null);
+        micKickFile      = prefs.getString("micKickFile",      null);
+        micSnareFile     = prefs.getString("micSnareFile",     null);
+        micHatOpenFile   = prefs.getString("micHatOpenFile",   null);
+        micHatClosedFile = prefs.getString("micHatClosedFile", null);
 
-// Si un sample micro est défini pour une voix, il a priorité
+        // Si un sample micro est défini pour une voix, il a priorité
         if (fromMicKick && micKickFile != null) {
             File f = new File(getFilesDir(), micKickFile);
             if (f.exists()) {
                 reloadSampleFromMicFile(f, REQ_WAV_KICK);
+                try {
+                    kick3D = new SpatialSamplePlayer(f);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this,
+                            "Erreur lors du chargement 3D : " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }
         if (fromMicSnare && micSnareFile != null) {
@@ -1262,6 +1310,7 @@ micHatClosedFile = prefs.getString("micHatClosedFile", null);
                 reloadSampleFromMicFile(f, REQ_WAV_HAT_CLOSED);
             }
         }
+
         clampPulsesToSteps();
         recomputePatternsAndUpdateView();
         circleView.reactivateAll();
