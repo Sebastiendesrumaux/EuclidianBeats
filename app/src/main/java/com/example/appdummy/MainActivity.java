@@ -1,5 +1,7 @@
-package com.example.appdummy;
 
+
+package com.example.appdummy;
+import java.io.File;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -66,7 +68,17 @@ public class MainActivity extends AppCompatActivity {
     private Uri uriSnare;
     private Uri uriHatOpen;
     private Uri uriHatClosed;
+// Indique si la voix utilise un sample provenant du micro
+    private boolean fromMicKick      = false;
+    private boolean fromMicSnare     = false;
+    private boolean fromMicHatOpen   = false;
+    private boolean fromMicHatClosed = false;
 
+    // Nom de fichier local (dans getFilesDir()) pour chaque sample micro
+    private String micKickFile;
+    private String micSnareFile;
+    private String micHatOpenFile;
+    private String micHatClosedFile;
     // mode de lecture par voix
     private PlayMode modeKick      = PlayMode.SYNTH;
     private PlayMode modeSnare     = PlayMode.SYNTH;
@@ -827,8 +839,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // --- Gestion des sources sonores (Synth / WAV) ---
-
-    private void showSoundSourceDialog(String title, final Runnable useSynthAction, final int requestCode) {
+private void showSoundSourceDialog(String title, final Runnable useSynthAction, final int requestCode) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
         String[] items = new String[] {
@@ -839,10 +850,51 @@ public class MainActivity extends AppCompatActivity {
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
-                    // Synthèse
+                    // Synthèse interne
                     useSynthAction.run();
+
+                    // On désactive le mode "micro" pour cette voix
+                    switch (requestCode) {
+                        case REQ_WAV_KICK:
+                            fromMicKick = false;
+                            micKickFile = null;
+                            break;
+                        case REQ_WAV_SNARE:
+                            fromMicSnare = false;
+                            micSnareFile = null;
+                            break;
+                        case REQ_WAV_HAT_OPEN:
+                            fromMicHatOpen = false;
+                            micHatOpenFile = null;
+                            break;
+                        case REQ_WAV_HAT_CLOSED:
+                            fromMicHatClosed = false;
+                            micHatClosedFile = null;
+                            break;
+                    }
+
                 } else if (which == 1) {
-                    // Sélection d'un fichier WAV
+                    // Sélection d'un fichier WAV depuis le stockage
+                    // => on repasse en mode "non-micro" pour cette voix
+                    switch (requestCode) {
+                        case REQ_WAV_KICK:
+                            fromMicKick = false;
+                            micKickFile = null;
+                            break;
+                        case REQ_WAV_SNARE:
+                            fromMicSnare = false;
+                            micSnareFile = null;
+                            break;
+                        case REQ_WAV_HAT_OPEN:
+                            fromMicHatOpen = false;
+                            micHatOpenFile = null;
+                            break;
+                        case REQ_WAV_HAT_CLOSED:
+                            fromMicHatClosed = false;
+                            micHatClosedFile = null;
+                            break;
+                    }
+
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     intent.setType("audio/*");
@@ -852,14 +904,58 @@ public class MainActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     startActivityForResult(intent, requestCode);
+
                 } else if (which == 2) {
-                    MicSampleRecorder rec = new MicSampleRecorder(MainActivity.this, "mic_rec",
-                        new MicSampleRecorder.OnSampleReadyListener() {
-                            @Override public void onSampleReady(java.io.File wav) {
-                                android.net.Uri u = android.net.Uri.fromFile(wav);
-                                reloadSampleFromUri(u, requestCode);
+                    // Enregistrement depuis le micro
+                    // On génère un nom de fichier avec timestamp pour cette voix
+                    final String baseName;
+                    long now = System.currentTimeMillis();
+                    switch (requestCode) {
+                        case REQ_WAV_KICK:
+                            baseName = "mic_kick_" + now;
+                            break;
+                        case REQ_WAV_SNARE:
+                            baseName = "mic_snare_" + now;
+                            break;
+                        case REQ_WAV_HAT_OPEN:
+                            baseName = "mic_hatopen_" + now;
+                            break;
+                        case REQ_WAV_HAT_CLOSED:
+                            baseName = "mic_hatclosed_" + now;
+                            break;
+                        default:
+                            baseName = "mic_unknown_" + now;
+                            break;
+                    }
+
+                    MicSampleRecorder rec = new MicSampleRecorder(
+                            MainActivity.this,
+                            baseName,
+                            new MicSampleRecorder.OnSampleReadyListener() {
+                                @Override public void onSampleReady(File wav) {
+                                    // On marque cette voix comme venant du micro
+                                    switch (requestCode) {
+                                        case REQ_WAV_KICK:
+                                            fromMicKick = true;
+                                            micKickFile = wav.getName();
+                                            break;
+                                        case REQ_WAV_SNARE:
+                                            fromMicSnare = true;
+                                            micSnareFile = wav.getName();
+                                            break;
+                                        case REQ_WAV_HAT_OPEN:
+                                            fromMicHatOpen = true;
+                                            micHatOpenFile = wav.getName();
+                                            break;
+                                        case REQ_WAV_HAT_CLOSED:
+                                            fromMicHatClosed = true;
+                                            micHatClosedFile = wav.getName();
+                                            break;
+                                    }
+                                    // Et on charge le sample dans le SoundPool
+                                    reloadSampleFromMicFile(wav, requestCode);
+                                }
                             }
-                        }
                     );
                     rec.show();
                 }
@@ -867,7 +963,7 @@ public class MainActivity extends AppCompatActivity {
         });
         builder.show();
     }
-
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -917,18 +1013,26 @@ public class MainActivity extends AppCompatActivity {
                 case REQ_WAV_KICK:
                     sampleKickId = soundId;
                     modeKick = PlayMode.SAMPLE;
+                    fromMicKick = false;
+                micKickFile = null;
                     break;
                 case REQ_WAV_SNARE:
                     sampleSnareId = soundId;
                     modeSnare = PlayMode.SAMPLE;
+                    fromMicSnare = false;
+                micSnareFile = null;
                     break;
                 case REQ_WAV_HAT_OPEN:
                     sampleHatOpenId = soundId;
                     modeHatOpen = PlayMode.SAMPLE;
+                    fromMicHatOpen = false;
+                    micHatOpenFile = null;
                     break;
                 case REQ_WAV_HAT_CLOSED:
                     sampleHatClosedId = soundId;
                     modeHatClosed = PlayMode.SAMPLE;
+                    fromMicHatClosed = false;
+                    micHatClosedFile = null;
                     break;
                 default:
                     break;
@@ -937,7 +1041,36 @@ public class MainActivity extends AppCompatActivity {
             // en cas d'échec, on laisse le mode synth
         }
     }
+private void reloadSampleFromMicFile(File wav, int requestCode) {
+        if (wav == null || !wav.exists() || soundPool == null) return;
 
+        int soundId = soundPool.load(wav.getPath(), 1);
+
+        switch (requestCode) {
+            case REQ_WAV_KICK:
+                sampleKickId = soundId;
+                modeKick = PlayMode.SAMPLE;
+                uriKick = null; // on n'utilise plus l'URI extern
+                break;
+            case REQ_WAV_SNARE:
+                sampleSnareId = soundId;
+                modeSnare = PlayMode.SAMPLE;
+                uriSnare = null;
+                break;
+            case REQ_WAV_HAT_OPEN:
+                sampleHatOpenId = soundId;
+                modeHatOpen = PlayMode.SAMPLE;
+                uriHatOpen = null;
+                break;
+            case REQ_WAV_HAT_CLOSED:
+                sampleHatClosedId = soundId;
+                modeHatClosed = PlayMode.SAMPLE;
+                uriHatClosed = null;
+                break;
+            default:
+                break;
+        }
+    }
     // --- Helpers de lecture en fonction du mode + glitch ---
 
     private void playKickVoice() {
@@ -1028,7 +1161,16 @@ public class MainActivity extends AppCompatActivity {
         e.putString("uriSnare",     (uriSnare     != null) ? uriSnare.toString()     : null);
         e.putString("uriHatOpen",   (uriHatOpen   != null) ? uriHatOpen.toString()   : null);
         e.putString("uriHatClosed", (uriHatClosed != null) ? uriHatClosed.toString() : null);
+// Infos sur les samples issus du micro
+        e.putBoolean("fromMicKick",      fromMicKick);
+        e.putBoolean("fromMicSnare",     fromMicSnare);
+        e.putBoolean("fromMicHatOpen",   fromMicHatOpen);
+        e.putBoolean("fromMicHatClosed", fromMicHatClosed);
 
+        e.putString("micKickFile",      micKickFile);
+        e.putString("micSnareFile",     micSnareFile);
+        e.putString("micHatOpenFile",   micHatOpenFile);
+        e.putString("micHatClosedFile", micHatClosedFile);
         e.apply();
 
         Toast.makeText(this, "État sauvegardé", Toast.LENGTH_SHORT).show();
@@ -1063,6 +1205,7 @@ public class MainActivity extends AppCompatActivity {
         modeHatOpen   = (prefs.getInt("modeHatOpen", 0)   == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
         modeHatClosed = (prefs.getInt("modeHatClosed", 0) == 1) ? PlayMode.SAMPLE : PlayMode.SYNTH;
 
+
         String sKick      = prefs.getString("uriKick", null);
         String sSnare     = prefs.getString("uriSnare", null);
         String sHatOpen   = prefs.getString("uriHatOpen", null);
@@ -1084,7 +1227,41 @@ public class MainActivity extends AppCompatActivity {
             uriHatClosed = Uri.parse(sHatClosed);
             reloadSampleFromUri(uriHatClosed, REQ_WAV_HAT_CLOSED);
         }
+        fromMicKick      = prefs.getBoolean("fromMicKick",      false);
+fromMicSnare     = prefs.getBoolean("fromMicSnare",     false);
+fromMicHatOpen   = prefs.getBoolean("fromMicHatOpen",   false);
+fromMicHatClosed = prefs.getBoolean("fromMicHatClosed", false);
 
+micKickFile      = prefs.getString("micKickFile",      null);
+micSnareFile     = prefs.getString("micSnareFile",     null);
+micHatOpenFile   = prefs.getString("micHatOpenFile",   null);
+micHatClosedFile = prefs.getString("micHatClosedFile", null);
+
+// Si un sample micro est défini pour une voix, il a priorité
+        if (fromMicKick && micKickFile != null) {
+            File f = new File(getFilesDir(), micKickFile);
+            if (f.exists()) {
+                reloadSampleFromMicFile(f, REQ_WAV_KICK);
+            }
+        }
+        if (fromMicSnare && micSnareFile != null) {
+            File f = new File(getFilesDir(), micSnareFile);
+            if (f.exists()) {
+                reloadSampleFromMicFile(f, REQ_WAV_SNARE);
+            }
+        }
+        if (fromMicHatOpen && micHatOpenFile != null) {
+            File f = new File(getFilesDir(), micHatOpenFile);
+            if (f.exists()) {
+                reloadSampleFromMicFile(f, REQ_WAV_HAT_OPEN);
+            }
+        }
+        if (fromMicHatClosed && micHatClosedFile != null) {
+            File f = new File(getFilesDir(), micHatClosedFile);
+            if (f.exists()) {
+                reloadSampleFromMicFile(f, REQ_WAV_HAT_CLOSED);
+            }
+        }
         clampPulsesToSteps();
         recomputePatternsAndUpdateView();
         circleView.reactivateAll();
