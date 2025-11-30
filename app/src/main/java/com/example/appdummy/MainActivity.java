@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean[] patternGreen;
     private boolean[] patternPink;
 
+    private boolean isBlueMuted = false;
+    private TextView stepsLabel;
+
     private double secondsPerStep;
     private double currentBpm = DEFAULT_BPM;
 
@@ -111,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             currentStep = (currentStep + 1) % steps;
 
             boolean kick      = circleView.shouldPlayKick(currentStep);
+        if (isBlueMuted) kick = false;
             boolean snare     = circleView.shouldPlaySnare(currentStep);
             boolean hatOpen   = circleView.shouldPlayHatOpen(currentStep);
             boolean hatClosed = circleView.shouldPlayHatClosed(currentStep);
@@ -168,6 +173,20 @@ public class MainActivity extends AppCompatActivity {
         plusBlue.setText("+ steps");
 
         Button blueSound = new Button(this);
+        stepsLabel = new TextView(this);
+        stepsLabel.setTextColor(Color.WHITE);
+        stepsLabel.setTextSize(16f);
+        stepsLabel.setText("Steps : " + steps);
+
+        CheckBox blueMuteCheck = new CheckBox(this);
+        blueMuteCheck.setText("Mute");
+        blueMuteCheck.setTextColor(Color.WHITE);
+        blueMuteCheck.setChecked(false);
+        blueMuteCheck.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                isBlueMuted = blueMuteCheck.isChecked();
+            }
+        });
         blueSound.setAllCaps(false);
         blueSound.setTextColor(Color.WHITE);
         blueSound.setBackgroundColor(0xFF0D47A1);
@@ -178,10 +197,14 @@ public class MainActivity extends AppCompatActivity {
         minusBlue.setLayoutParams(lpWeightBlue);
         plusBlue.setLayoutParams(lpWeightBlue);
         blueSound.setLayoutParams(lpWeightBlue);
+        stepsLabel.setLayoutParams(lpWeightBlue);
+        blueMuteCheck.setLayoutParams(lpWeightBlue);
 
         blueBar.addView(minusBlue);
         blueBar.addView(plusBlue);
         blueBar.addView(blueSound);
+        blueBar.addView(stepsLabel);
+        blueBar.addView(blueMuteCheck);
 
         // Rangées orange / vert / rose : [Random] [ - ] [ + ] [Sound]
 
@@ -194,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button orangeRandom = new Button(this);
         orangeRandom.setAllCaps(false);
-        orangeRandom.setTextColor(Color.BLACK);
+        orangeRandom.setText(String.valueOf(pulsesOrange));
         orangeRandom.setBackgroundColor(0xFFFF9800);
 
         Button orangeMinus = new Button(this);
@@ -236,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button greenRandom = new Button(this);
         greenRandom.setAllCaps(false);
-        greenRandom.setTextColor(Color.BLACK);
+        greenRandom.setText(String.valueOf(pulsesGreen));
         greenRandom.setBackgroundColor(0xFF4CAF50);
 
         Button greenMinus = new Button(this);
@@ -276,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button pinkRandom = new Button(this);
         pinkRandom.setAllCaps(false);
-        pinkRandom.setTextColor(Color.BLACK);
+        pinkRandom.setText(String.valueOf(pulsesPink));
         pinkRandom.setBackgroundColor(0xFFE91E63);
 
         Button pinkMinus = new Button(this);
@@ -739,9 +762,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateButtonLabels(Button orangeRandom, Button greenRandom, Button pinkRandom) {
-        orangeRandom.setText("Snare : " + pulsesOrange + " (0.." + steps + " / " + steps + " bleus)");
-        greenRandom.setText("Hat vert : " + pulsesGreen + " (0.." + steps + " / " + steps + " bleus)");
-        pinkRandom.setText("Hat rose : " + pulsesPink + " (0.." + steps + " / " + steps + " bleus)");
+        if (stepsLabel != null) stepsLabel.setText("Steps : " + steps);
+
+        orangeRandom.setText(String.valueOf(pulsesOrange));
+        greenRandom.setText(String.valueOf(pulsesGreen));
+        pinkRandom.setText(String.valueOf(pulsesPink));
     }
 
     private static boolean[] makeEuclideanPattern(int steps, int pulses) {
