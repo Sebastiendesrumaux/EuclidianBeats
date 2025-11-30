@@ -1105,7 +1105,7 @@ public class MainActivity extends AppCompatActivity {
                (currentStep % 4 == 1) ? -30 :
                (currentStep % 4 == 2) ? +30 :
                                         +90;
-kick3D.play(angle, 0.0, 1.0);
+kick3D.play(angle, 0.0, 3.0);
                // double angle = currentStep * (360.0 / steps);
               //  kick3D.play(45, 0.0, 1.3);
             }

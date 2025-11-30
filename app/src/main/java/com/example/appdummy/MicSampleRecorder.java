@@ -322,7 +322,49 @@ btnTrim.setOnClickListener(new View.OnClickListener() {
      * Coupe les silences au début et à la fin selon trimThreshold (0..1).
      * Met à jour le WAV et l’oscilloscope.
      */
+     
+     /**
+ * Coupe les "blancs" au début et à la fin du buffer PCM, 
+ * selon un seuil absolu (en valeur de |sample|).
+ * 
+ * @param src       signal d'entrée
+ * @param threshold seuil de silence (par ex. 500, 1000,…)
+ * @return          nouveau buffer trimmé (ou src si rien à couper)
+ */
+private short[] trimSilence(short[] src, int threshold) {
+    if (src == null || src.length == 0) return src;
+    if (threshold < 0) threshold = -threshold;
+
+    int n = src.length;
+
+    // 1) chercher le premier sample AU-DESSUS du seuil
+    int start = 0;
+    while (start < n && Math.abs(src[start]) <= threshold) {
+        start++;
+    }
+
+    // si tout est en dessous du seuil → on renvoie l'original (ou un buffer vide si tu préfères)
+    if (start >= n) {
+        return src;
+        // ou: return new short[0];
+    }
+
+    // 2) chercher le dernier sample AU-DESSUS du seuil
+    int end = n - 1;
+    while (end > start && Math.abs(src[end]) <= threshold) {
+        end--;
+    }
+
+    int len = end - start + 1;
+    if (len <= 0) return src;
+
+    short[] out = new short[len];
+    System.arraycopy(src, start, out, 0, len);
+    return out;
+}
     private void trimCurrentPcm() {
+     
+      
         if (currentPcm == null || currentPcm.length == 0) {
             label.setText("Rien à trimmer.");
             return;
@@ -333,7 +375,9 @@ btnTrim.setOnClickListener(new View.OnClickListener() {
         if (th > 1.0) th = 1.0;
 
         int threshold = (int) Math.round(th * 32767.0);
-
+        currentPcm= trimSilence(currentPcm, threshold);
+        
+        /*
         int n = currentPcm.length;
         int start = 0;
         int end   = n - 1;
@@ -362,7 +406,8 @@ btnTrim.setOnClickListener(new View.OnClickListener() {
         short[] trimmed = new short[newLen];
         System.arraycopy(currentPcm, start, trimmed, 0, newLen);
         currentPcm = trimmed;
-
+        */
+        
         // Réécriture du fichier WAV
         saveWav(currentPcm);
 
@@ -371,7 +416,7 @@ btnTrim.setOnClickListener(new View.OnClickListener() {
             waveformView.setWaveform(currentPcm);
         }
 
-        label.setText("Trim OK (" + newLen + " échantillons).");
+        label.setText("Trim OK");
     }
 
     /**
