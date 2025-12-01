@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Player 3D pour le kick (samples micro)
     private SpatialSamplePlayer kick3D = null;
-
+    private SpatialSamplePlayer snare3D = null;
     private int steps        = INITIAL_STEPS;
     private int pulsesOrange = INITIAL_PULSES_ORANGE;
     private int pulsesGreen  = INITIAL_PULSES_GREEN;
@@ -748,6 +748,10 @@ public class MainActivity extends AppCompatActivity {
             kick3D.release();
             kick3D = null;
         }
+        if (snare3D != null) {
+            snare3D.release();
+            snare3D = null;
+        }
     }
 
     private void startLoop() {
@@ -975,6 +979,17 @@ public class MainActivity extends AppCompatActivity {
                                                     Toast.LENGTH_LONG).show();
                                         }
                                     }
+                                    // Si c'est le SNARE, on prépare aussi le player 3D
+                                    if (requestCode == REQ_WAV_SNARE) {
+                                        try {
+                                            snare3D = new SpatialSamplePlayer(wav);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(MainActivity.this,
+                                                    "Erreur lors du chargement 3D : " + e.getMessage(),
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    }
                                 }
                             }
                     );
@@ -1105,7 +1120,7 @@ public class MainActivity extends AppCompatActivity {
                (currentStep % 4 == 1) ? -30 :
                (currentStep % 4 == 2) ? +30 :
                                         +90;
-kick3D.play(angle, 0.0, 3.0);
+                kick3D.play(angle, 0.0, 3.0);
                // double angle = currentStep * (360.0 / steps);
               //  kick3D.play(45, 0.0, 1.3);
             }
@@ -1120,16 +1135,36 @@ kick3D.play(angle, 0.0, 3.0);
             soundEngine.playKick();
         }
     }
-
-    private void playSnareVoice() {
-        if (modeSnare == PlayMode.SAMPLE && soundPool != null && sampleSnareId != 0) {
-            float[] vAndP = makeGlitchedVolumeAndPitch();
-            soundPool.play(sampleSnareId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+ private void playSnareVoice() {
+        if (modeSnare == PlayMode.SAMPLE) {
+            // Si c'est un sample micro et qu'on a un player 3D, on l'utilise
+            if (fromMicSnare && snare3D != null) {
+              double currentStepI=circleView.snareHitIndex;
+              double anglepan = (currentStep % 4 == 0) ? -90 :
+               (currentStep % 4 == 1) ? -30 :
+               (currentStep % 4 == 2) ? +30 :
+                                        +90;
+              double angletilt = (currentStepI % 4 == 0) ? -60 :
+               (currentStepI % 4 == 1) ? -30 :
+               (currentStepI % 4 == 2) ? +30 :
+                                        +60;
+              snare3D.play(0,angletilt, 3.0);
+               // double angle = currentStep * (360.0 / steps);
+              //  kick3D.play(45, 0.0, 1.3);
+            }
+            // Sinon, on retombe sur le SoundPool "plat"
+            else if (soundPool != null && sampleSnareId != 0) {
+                float[] vAndP = makeGlitchedVolumeAndPitch();
+                soundPool.play(sampleSnareId, vAndP[0], vAndP[0], 1, 0, vAndP[1]);
+            } else {
+                soundEngine.playSnare();
+            }
         } else {
             soundEngine.playSnare();
         }
     }
 
+    
     private void playHatOpenVoice() {
         if (modeHatOpen == PlayMode.SAMPLE && soundPool != null && sampleHatOpenId != 0) {
             float[] vAndP = makeGlitchedVolumeAndPitch();
@@ -1292,12 +1327,22 @@ kick3D.play(angle, 0.0, 3.0);
                 }
             }
         }
-        if (fromMicSnare && micSnareFile != null) {
+        
+         if (fromMicSnare && micSnareFile != null) {
             File f = new File(getFilesDir(), micSnareFile);
             if (f.exists()) {
                 reloadSampleFromMicFile(f, REQ_WAV_SNARE);
+                try {
+                    snare3D = new SpatialSamplePlayer(f);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this,
+                            "Erreur lors du chargement 3D : " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }
+      
         if (fromMicHatOpen && micHatOpenFile != null) {
             File f = new File(getFilesDir(), micHatOpenFile);
             if (f.exists()) {

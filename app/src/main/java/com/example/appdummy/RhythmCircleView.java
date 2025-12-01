@@ -22,7 +22,8 @@ public class RhythmCircleView extends View {
 
     private int steps = 16;
     private double secondsPerStep = 0.5;
-
+    public int snareHitIndex = 0;
+    
     private boolean[] patternOrange = null;
     private boolean[] patternGreen  = null;
     private boolean[] patternPink   = null;
@@ -131,6 +132,7 @@ public class RhythmCircleView extends View {
 
     public void setCurrentStep(int s) {
         currentStep = ((s % Math.max(1, steps)) + steps) % steps;
+        if (currentStep == 0) snareHitIndex=0;
         invalidate();
     }
 
@@ -163,7 +165,9 @@ public class RhythmCircleView extends View {
     public boolean shouldPlaySnare(int step) {
         if (patternOrange == null || activeOrange == null) return false;
         if (step < 0 || step >= patternOrange.length || step >= activeOrange.length) return false;
-        return patternOrange[step] && activeOrange[step];
+        boolean r=patternOrange[step] && activeOrange[step];
+        if (r) snareHitIndex++;
+        return r;
     }
 
     public boolean shouldPlayHatOpen(int step) {
