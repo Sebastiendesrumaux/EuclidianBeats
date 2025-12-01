@@ -1148,7 +1148,7 @@ public class MainActivity extends AppCompatActivity {
                (currentStepI % 4 == 1) ? -30 :
                (currentStepI % 4 == 2) ? +30 :
                                         +60;
-              snare3D.play(0,angletilt, 3.0);
+              snare3D.play(angletilt,angletilt, 3.0);
                // double angle = currentStep * (360.0 / steps);
               //  kick3D.play(45, 0.0, 1.3);
             }

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 /**
  * Charge un fichier WAV 16-bit PCM (mono ou stéréo),
  * le convertit en mono interne,
@@ -20,8 +21,9 @@ import java.util.Map;
  *   [L0, R0, L1, R1, L2, R2, ...]
  */
 public class Sound3DEngine {
-private final Map<String, short[]> cache = new HashMap<>();
-    private short[] monoPcm;   // buffer mono interne
+
+    private final Map<String, short[]> cache = new HashMap<>();
+    private short[] monoPcm;   // buffer mono interne (16-bit)
     private int sampleRate;    // tiré du WAV
 
     public Sound3DEngine(String path) throws IOException {
@@ -33,48 +35,114 @@ private final Map<String, short[]> cache = new HashMap<>();
     }
 
     /**
-     * Applique une spatialisation simple (ILD + ITD + distance + tilt)
+     * Applique une spatialisation simple (ILD + ITD + distance + EQ tilt)
      * et retourne un buffer stéréo intercalé.
      */
     public short[] apply(double panDeg, double tiltDeg, double radius) {
-      
-      
         if (monoPcm == null || monoPcm.length == 0) {
             return new short[0];
         }
 
-      
-      
-     
-    // Quantification pour éviter une infinité de clés
-    int panQ  = (int) Math.round(panDeg);
-    int tiltQ = (int) Math.round(tiltDeg);
-    double radiusQ = Math.round(radius * 100.0) / 100.0; // précision 1 cm
+        // Quantification pour éviter une infinité de clés
+        int panQ  = (int) Math.round(panDeg);
+        int tiltQ = (int) Math.round(tiltDeg);
+        double radiusQ = Math.round(radius * 100.0) / 100.0; // précision 1 cm
 
-    String key = panQ + "_" + tiltQ + "_" + radiusQ;
+        String key = panQ + "_" + tiltQ + "_" + radiusQ;
 
-    // --- CACHE : retourne immédiatement si déjà calculé ---
-    short[] cached = cache.get(key);
-    if (cached != null) {
-        return cached;
+        // --- CACHE : retourne immédiatement si déjà calculé ---
+        short[] cached = cache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        // --- Sinon : on calcule pour de vrai ---
+        short[] stereo = computeSpatialized(panDeg, tiltDeg, radius);
+
+        // On le range dans le cache
+        cache.put(key, stereo);
+
+        return stereo;
     }
 
-    // --- Sinon : on calcule pour de vrai ---
-    short[] stereo = computeSpatialized(panDeg, tiltDeg, radius);
+    public int getSampleRate() {
+        return sampleRate;
+    }
 
-    // On le range dans le cache
-    cache.put(key, stereo);
+    // -------------------------------------------------
+    // Cœur DSP : spatialisation + tilt EQ
+    // -------------------------------------------------
 
-    return stereo;
-}
-private short[] computeSpatialized(double panDeg, double tiltDeg, double radius) {
-    // >>> ici tu mets exactement ton ancien code d'apply <<<
-   if (monoPcm == null || monoPcm.length == 0) {
+    /**
+     * Applique une égalisation simple en fonction du tilt :
+     *   tilt > 0  => plus d'aigus, un peu moins de graves (source au-dessus)
+     *   tilt < 0  => plus de graves, un peu moins d'aigus (source en dessous)
+     *
+     * inOut : buffer mono -1..+1 (float)
+     */
+    private void applyTiltEq(float[] inOut, double tiltDeg) {
+        if (inOut == null || inOut.length == 0) return;
+
+        // On borne le tilt à [-60°, +60°] pour éviter les extrêmes
+        double t = Math.max(-60.0, Math.min(60.0, tiltDeg));
+        double tNorm = t / 60.0; // -1 .. +1
+
+        // Coeff du low-pass : plus petit => filtre plus "lent" (coupure plus basse)
+        double alpha = 0.06; // à ajuster si tu veux (0.03 = plus grave, 0.1 = plus brillant)
+
+        float low = 0f;
+
+        for (int i = 0; i < inOut.length; i++) {
+            float x = inOut[i];
+
+            // Low-pass 1er ordre très simple
+            low = (float)(low + alpha * (x - low));
+            float high = x - low;
+
+            double lowGain;
+            double highGain;
+
+            if (tNorm >= 0.0) {
+                // Au-dessus : on rend le son plus brillant
+                lowGain  = 1.0 - 0.4 * tNorm;  // à +60° => 0.6
+                highGain = 1.0 + 1.0 * tNorm;  // à +60° => 2.0
+            } else {
+                // En dessous : on rend le son plus sombre, plus "bas"
+                double u = -tNorm;             // 0..1
+                lowGain  = 1.0 + 1.0 * u;      // à -60° => 2.0
+                highGain = 1.0 - 0.6 * u;      // à -60° => 0.4
+            }
+
+            double y = lowGain * low + highGain * high;
+
+            // Limitation douce
+            if (y >  1.0) y =  1.0;
+            if (y < -1.0) y = -1.0;
+
+            inOut[i] = (float)y;
+        }
+    }
+
+    /**
+     * Spatialisation complète : EQ tilt + ILD + ITD + distance.
+     */
+    private short[] computeSpatialized(double panDeg, double tiltDeg, double radius) {
+        if (monoPcm == null || monoPcm.length == 0) {
             return new short[0];
         }
 
+        int monoLen = monoPcm.length;
 
-        // --- Paramètres de pan (azimut) ---
+        // --- 1) On part d'une copie float normalisée -1..+1 ---
+        float[] work = new float[monoLen];
+        for (int i = 0; i < monoLen; i++) {
+            work[i] = monoPcm[i] / 32768f;
+        }
+
+        // --- 2) EQ dépendante du tilt (haut/bas) ---
+        applyTiltEq(work, tiltDeg);
+
+        // --- 3) Paramètres de pan (azimut) ---
         // On borne le pan entre -90° et +90°
         double pan = Math.max(-90.0, Math.min(90.0, panDeg));
         double panRad = Math.toRadians(pan);
@@ -89,20 +157,18 @@ private short[] computeSpatialized(double panDeg, double tiltDeg, double radius)
         gL /= maxG;
         gR /= maxG;
 
-        // --- Distance : atténuation douce ---
+        // --- 4) Distance : atténuation douce ---
         if (radius < 0.1) radius = 0.1;
         double distanceGain = 1.0 / (1.0 + 0.5 * (radius - 1.0));
         if (distanceGain < 0.05) distanceGain = 0.05;
 
-        // --- Tilt : on module légèrement le gain global ---
+        // On garde un petit tiltFactor global très subtil
         double tilt = Math.max(-90.0, Math.min(90.0, tiltDeg));
         double tiltRad = Math.toRadians(tilt);
-        // cos(tilt) varie de 0 (±90°) à 1 (0°), on y associe un facteur
-        double tiltFactor = 0.7 + 0.3 * Math.cos(tiltRad); // entre 0.4 et 1.0
-
+        double tiltFactor = 0.9 + 0.1 * Math.cos(tiltRad); // effet très léger
         double globalGain = distanceGain * tiltFactor;
 
-        // --- ITD : petit décalage temporel entre les oreilles ---
+        // --- 5) ITD : petit décalage temporel entre les oreilles ---
         // max ~0.7 ms => ~31 samples à 44.1 kHz
         int maxDelaySamples = (int) Math.round(0.0007 * sampleRate);
         int delaySamples = (int) Math.round(maxDelaySamples * x);
@@ -110,9 +176,7 @@ private short[] computeSpatialized(double panDeg, double tiltDeg, double radius)
         int delayLeft  = (delaySamples > 0) ? 0 : -delaySamples;
         int delayRight = (delaySamples > 0) ? delaySamples : 0;
 
-        int monoLen = monoPcm.length;
-        int outLen  = monoLen + Math.max(delayLeft, delayRight);
-
+        int outLen = monoLen + Math.max(delayLeft, delayRight);
         short[] stereo = new short[outLen * 2]; // L,R interleavés
 
         for (int i = 0; i < monoLen; i++) {
@@ -121,12 +185,20 @@ private short[] computeSpatialized(double panDeg, double tiltDeg, double radius)
             if (idxL < 0 || idxL >= outLen) continue;
             if (idxR < 0 || idxR >= outLen) continue;
 
-            double base = monoPcm[i] * globalGain;
+            // On repart de work[i] (-1..+1), EQ tilt déjà appliquée
+            double base = work[i] * globalGain;
 
-            int sL = (int) Math.round(base * gL);
-            int sR = (int) Math.round(base * gR);
+            double sampleL = base * gL;
+            double sampleR = base * gR;
 
-            // Écriture avec clipping
+            int sL = (int) Math.round(sampleL * 32767.0);
+            int sR = (int) Math.round(sampleR * 32767.0);
+
+            if (sL > Short.MAX_VALUE) sL = Short.MAX_VALUE;
+            if (sL < Short.MIN_VALUE) sL = Short.MIN_VALUE;
+            if (sR > Short.MAX_VALUE) sR = Short.MAX_VALUE;
+            if (sR < Short.MIN_VALUE) sR = Short.MIN_VALUE;
+
             int posL = 2 * idxL;
             int posR = 2 * idxR + 1;
 
@@ -143,10 +215,6 @@ private short[] computeSpatialized(double panDeg, double tiltDeg, double radius)
         }
 
         return stereo;
-    }
-
-    public int getSampleRate() {
-        return sampleRate;
     }
 
     // -------------------------------------------------
@@ -186,15 +254,12 @@ private short[] computeSpatialized(double panDeg, double tiltDeg, double radius)
                 throw new IOException("Only mono or stereo WAV supported (channels=" + numChannels + ")");
             }
 
-            // On cherche le chunk "data"
-            // Le header de 44 octets standard contient déjà "data", mais soyons un peu plus souples.
-            int dataSize = -1;
+            // Chunk "data" à l'offset 36 (header standard)
+            int dataSize;
             if (header[36] == 'd' && header[37] == 'a' &&
                 header[38] == 't' && header[39] == 'a') {
                 dataSize = littleEndianInt(header, 40);
             } else {
-                // header non standard, il faudrait parser les chunks.
-                // Pour rester simple, on suppose ici un header standard.
                 throw new IOException("Unsupported WAV header (no 'data' at offset 36)");
             }
 
