@@ -22,12 +22,12 @@
         android:debuggable="true"
         android:extractNativeLibs="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="EuclidianBeats"
+        android:label="Girl"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" >
         <activity
-            android:name="com.example.appdummy.MainActivity"
+            android:name="com.example.girl.Girl"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="portrait" >
